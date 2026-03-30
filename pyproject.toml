@@ -7,3 +7,8 @@ requires-python = ">=3.14"
 dependencies = [
     "prefect>=3.6.24",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.8",
+]
