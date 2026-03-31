@@ -138,6 +138,12 @@ cd infra
 docker compose down
 ```
 
+## Prefect (local)
+
+```bash
+docker run -p 4200:4200 -d --rm prefecthq/prefect:3-latest -- prefect server start --host 0.0.0.0
+```
+
 ## Project Structure
 
 ```text
