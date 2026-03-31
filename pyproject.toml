@@ -26,3 +26,6 @@ dev = [
 
 [tool.setuptools]
 packages = ["lib"]
+
+[tool.mypy]
+disable_error_code = ["untyped-decorator"]

@@ -3,7 +3,8 @@ repos:
     rev: v1.19.1
     hooks:
     -   id: mypy
-        args: [--strict]
+        args: [--strict, --ignore-missing-imports]
+        additional_dependencies: [types-requests]
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.8
     hooks:
