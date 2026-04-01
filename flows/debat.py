@@ -1,7 +1,6 @@
 import json
 import os
 from typing import Any
-from zipfile import ZipFile
 
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, NO_CACHE
@@ -22,24 +21,24 @@ def get_service_account_info() -> dict[str, Any]:
     return {str(key): value for key, value in parsed_obj.items()}
 
 
-@task(cache_policy=NO_CACHE)
-def fetch_debat_data() -> ZipFile:
+@task(cache_key_fn=task_input_hash, persist_result=True)
+def fetch_debat_data() -> bytes:
     debat_archive = fetch_zip_file(DEBAT_URL)
     return debat_archive
 
 
-@task(cache_key_fn=task_input_hash)
-def extract_debat_data(debat_archive: ZipFile) -> list[str]:
+@task(cache_key_fn=task_input_hash, persist_result=True)
+def extract_debat_data(debat_archive: bytes) -> list[str]:
     debat_contents = extract_file_contents(debat_archive)
     return debat_contents
 
 
-@task(persist_result=True)
+@task(persist_result=True, cache_policy=INPUTS)
 def parse_debat_contents(debat_contents: list[str]) -> DebatParseResult:
     return parse_debats_files(debat_contents)
 
 
-@task(cache_policy=INPUTS)
+@task(cache_policy=NO_CACHE)
 def upload_to_bigquery(parsed_debats: DebatParseResult) -> None:
     credentials = GcpCredentials(service_account_info=get_service_account_info())
     with BigQueryWarehouse(gcp_credentials=credentials) as warehouse:
@@ -55,7 +54,29 @@ def upload_to_bigquery(parsed_debats: DebatParseResult) -> None:
             )
         )
         print("created and truncated table comptes_rendus")
-        print("will execute : ", len(parsed_debats.comptes_rendus), " inserts")
+        print(
+            "will execute : ",
+            len(parsed_debats.comptes_rendus),
+            "comptes_rendus inserts",
+        )
+        smt = f"""
+            INSERT INTO {GCP_PROJECT}.{BQ_DATASET}.comptes_rendus
+            VALUES {",".join(compte_rendu.insert_sql_text_values() for compte_rendu in parsed_debats.comptes_rendus)};
+            """
+        print(smt)
+        # warehouse.execute(
+
+        # )
+        print("will execute : ", len(parsed_debats.points), "points inserts")
+        print(
+            "will execute : ", len(parsed_debats.interventions), "interventions inserts"
+        )
+        # insert in batches of 1000 to avoid hitting BigQuery limits
+        # batch_size = 1000
+        # for i in range(0, len(parsed_debats.comptes_rendus), batch_size):
+        #     batch = parsed_debats.comptes_rendus[i : i + batch_size]
+
+        print("finished inserting data into BigQuery")
 
 
 @flow

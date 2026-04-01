@@ -4,19 +4,20 @@ import zipfile
 import requests
 
 
-def fetch_zip_file(url: str) -> zipfile.ZipFile:
-    print(f"Fetching file from {url}...")
-    file = requests.get(url)
-    print("Download complete, processing the zip archive...")
-    zip_archive = zipfile.ZipFile(io.BytesIO(file.content))
+def fetch_zip_file(url: str) -> bytes:
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise ValueError(
+            f"Failed to fetch file from {url}, status code: {response.status_code}"
+        )
+    return response.content
 
-    return zip_archive
 
-
-def extract_file_contents(zip_archive: zipfile.ZipFile) -> list[str]:
+def extract_file_contents(archive_content: bytes) -> list[str]:
+    zip_archive = zipfile.ZipFile(io.BytesIO(archive_content))
     file_contents = []
     for file_info in zip_archive.infolist():
         with zip_archive.open(file_info) as file:
-            content = file.read().decode("utf-8")
-            file_contents.append(content)
+            file_content = file.read().decode("utf-8")
+            file_contents.append(file_content)
     return file_contents
