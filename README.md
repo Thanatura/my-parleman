@@ -3,6 +3,8 @@
 # Setup du projet
 
 1. Installer [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. Synchroniser les dépendances avec `uv sync`
+3. Installer le hook de pre-commit avec `uv run pre-commit install` et `uv run pre-commit autoupdate`
 
 # Configurer le Service Account GCP
 
