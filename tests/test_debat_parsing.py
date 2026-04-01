@@ -22,13 +22,13 @@ def test_parse_debat_file_extracts_compte_rendu_points_interventions() -> None:
     assert compte_rendu.legislature == "17"
 
     point = parsed.points[0]
-    assert point.uid == "CRSANR5L17S2025O1N001"
+    assert point.compte_rendu_uid == "CRSANR5L17S2025O1N001"
     assert point.point_id == "3511370"
     assert point.point_type == "point"
     assert point.titre == "Déclaration du Gouvernement"
 
     intervention = parsed.interventions[0]
-    assert intervention.uid == "CRSANR5L17S2025O1N001"
+    assert intervention.compte_rendu_uid == "CRSANR5L17S2025O1N001"
     assert intervention.point_id == "3511370"
     assert intervention.intervention_id == "3511371"
     assert intervention.speaker_name == "Mme la présidente"
@@ -57,6 +57,8 @@ def test_parse_debats_files_aggregates_multiple_xml_documents() -> None:
 
     assert parsed.comptes_rendus[0].uid == "CRSANR5L17S2025O1N001"
     assert parsed.comptes_rendus[1].uid == "CRSANR5L17S2025O1N002"
+    assert parsed.points[0].compte_rendu_uid == "CRSANR5L17S2025O1N001"
+    assert parsed.points[1].compte_rendu_uid == "CRSANR5L17S2025O1N002"
     assert parsed.points[0].point_id == "3511370"
     assert parsed.points[1].point_id == "3512370"
     assert parsed.interventions[0].intervention_id == "3511371"

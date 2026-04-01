@@ -46,10 +46,10 @@ def _find_text(node: ET.Element | None, path: str) -> str | None:
 def parse_debat_file(xml_content: str) -> DebatParseResult:
     root = ET.fromstring(xml_content)
 
-    uid = _find_text(root, "an:uid")
+    compte_rendu_uid = _find_text(root, "an:uid")
 
     compte_rendu = CompteRendu(
-        uid=uid,
+        uid=compte_rendu_uid,
         seance_ref=_find_text(root, "an:seanceRef"),
         session_ref=_find_text(root, "an:sessionRef"),
         date_seance=_find_text(root, "an:metadonnees/an:dateSeance"),
@@ -84,7 +84,7 @@ def parse_debat_file(xml_content: str) -> DebatParseResult:
             point_valeur = section.attrib.get("valeur_ptsodj")
             points.append(
                 PointSeance(
-                    uid=uid,
+                    compte_rendu_uid=compte_rendu_uid,
                     point_id=point_id,
                     point_type=section_tag,
                     valeur_ptsodj=point_valeur,
@@ -102,7 +102,7 @@ def parse_debat_file(xml_content: str) -> DebatParseResult:
                 first_orateur = paragraphe.find("an:orateurs/an:orateur", NS)
                 interventions.append(
                     Intervention(
-                        uid=uid,
+                        compte_rendu_uid=compte_rendu_uid,
                         point_id=point_id,
                         point_valeur_ptsodj=point_valeur,
                         intervention_id=paragraphe.attrib.get("id_syceron"),

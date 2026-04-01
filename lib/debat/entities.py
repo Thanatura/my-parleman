@@ -45,43 +45,27 @@ class CompteRendu:
         TRUNCATE TABLE {project_id}.{dataset_id}.comptes_rendus;
         """.strip()
 
-    def insert_sql_text(self, project_id: str, dataset_id: str) -> str:
+    def insert_sql_text_values(self) -> str:
         return f"""
-        INSERT INTO {project_id}.{dataset_id}.comptes_rendus (
-            uid,
-            seance_ref,
-            session_ref,
-            date_seance,
-            date_seance_jour,
-            num_seance_jour,
-            num_seance,
-            type_assemblee,
-            legislature,
-            session,
-            etat,
-            diffusion,
-            version
-        ) VALUES (
-            {self.uid!r},
-            {self.seance_ref!r},
-            {self.session_ref!r},
-            {self.date_seance!r},
-            {self.date_seance_jour!r},
-            {self.num_seance_jour!r},
-            {self.num_seance!r},
-            {self.type_assemblee!r},
-            {self.legislature!r},
-            {self.session!r},
-            {self.etat!r},
-            {self.diffusion!r},
-            {self.version!r}
-        );
+        ({self.uid!r},
+        {self.seance_ref!r},
+        {self.session_ref!r},
+        {self.date_seance!r},
+        {self.date_seance_jour!r},
+        {self.num_seance_jour!r},
+        {self.num_seance!r},
+        {self.type_assemblee!r},
+        {self.legislature!r},
+        {self.session!r},
+        {self.etat!r},
+        {self.diffusion!r},
+        {self.version!r})
         """.strip()
 
 
 @dataclass(frozen=True)
 class PointSeance:
-    uid: str | None
+    compte_rendu_uid: str | None
     point_id: str | None
     point_type: str
     valeur_ptsodj: str | None
@@ -96,7 +80,7 @@ class PointSeance:
     def to_sql_insert(self, project_id: str, dataset_id: str) -> str:
         return f"""
         INSERT INTO {project_id}.{dataset_id}.points_seance (
-            uid,
+            compte_rendu_uid,
             point_id,
             point_type,
             valeur_ptsodj,
@@ -108,7 +92,7 @@ class PointSeance:
             sommaire,
             titre
         ) VALUES (
-            {self.uid!r},
+            {self.compte_rendu_uid!r},
             {self.point_id!r},
             {self.point_type!r},
             {self.valeur_ptsodj!r},
@@ -125,7 +109,7 @@ class PointSeance:
 
 @dataclass(frozen=True)
 class Intervention:
-    uid: str | None
+    compte_rendu_uid: str | None
     point_id: str | None
     point_valeur_ptsodj: str | None
     intervention_id: str | None
@@ -143,7 +127,7 @@ class Intervention:
     def to_sql_insert(self) -> str:
         return f"""
         INSERT INTO interventions (
-            uid,
+            compte_rendu_uid,
             point_id,
             point_valeur_ptsodj,
             intervention_id,
@@ -158,7 +142,7 @@ class Intervention:
             speaker_qualite,
             texte
         ) VALUES (
-            {self.uid!r},
+            {self.compte_rendu_uid!r},
             {self.point_id!r},
             {self.point_valeur_ptsodj!r},
             {self.intervention_id!r},
