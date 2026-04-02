@@ -14,7 +14,13 @@ class ProjectConfig:
 
 
 def _get_service_account_info() -> dict[str, Any]:
-    parsed_obj: object = json.loads(os.environ["SERVICE_ACCOUNT_INFO"])
+    raw_value = os.environ["SERVICE_ACCOUNT_INFO"]
+    try:
+        parsed_obj: object = json.loads(raw_value)
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            "SERVICE_ACCOUNT_INFO must be valid JSON that decodes to a JSON object"
+        ) from e
     if not isinstance(parsed_obj, dict):
         raise ValueError("SERVICE_ACCOUNT_INFO must decode to a JSON object")
     return {str(key): value for key, value in parsed_obj.items()}
