@@ -60,10 +60,12 @@ def read_json_files_from_zip(zip_bytes: bytes, prefix: str) -> list[dict[str, An
     return payloads
 
 
-def organe_refs(raw_organes: Any) -> list[str | None]:
+def organe_refs(raw_organes: dict[str, Any]) -> list[str | None]:
     if not raw_organes:
         return []
     refs = raw_organes.get("organeRef", [])
     if isinstance(refs, str):
         return [refs]
+    if not isinstance(refs, list):
+        raise ValueError(f"Expected 'organeRef' to be a str or list, got {type(refs)}")
     return refs

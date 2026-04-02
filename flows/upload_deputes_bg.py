@@ -77,8 +77,7 @@ def load_to_bigquery(
         mandats=mandats,
         organes=organes,
         deports=deports,
-        project=config.gcp_project,
-        dataset=config.bq_dataset,
+        config=config,
     )
 
     for table_name, loaded_count in counts.items():

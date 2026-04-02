@@ -2,16 +2,17 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import Any
 
+from google.cloud import bigquery, storage
+from google.oauth2 import service_account
 from prefect import flow, task
 from prefect.artifacts import create_table_artifact
 
 from prefect.cache_policies import INPUTS, NO_CACHE
 from prefect.tasks import task_input_hash
-from prefect_gcp import GcpCredentials
 from lib.bq_utils import load_table_from_uri, upload_jsonl_to_gcs
 from lib.config import ProjectConfig, get_config
 from lib.debat import DebatParseResult, parse_debats_files
-from lib.debat.bq_schemas import TABLE_SCHEMAS
+from lib.debat.bq_schemas import DEBATS_SCHEMAS
 from lib.extract import extract_file_contents, fetch_zip_file
 
 
@@ -44,9 +45,17 @@ def parse_debat_contents(debat_contents: list[str]) -> DebatParseResult:
 
 @task(cache_policy=NO_CACHE)
 def upload_to_bigquery(parsed_debats: DebatParseResult, config: ProjectConfig) -> None:
-    credentials = GcpCredentials(service_account_info=config.service_account_info)
-    storage_client = credentials.get_cloud_storage_client(project=config.gcp_project)
-    bq_client = credentials.get_bigquery_client(project=config.gcp_project)
+    credentials = service_account.Credentials.from_service_account_info(
+        config.service_account_info
+    )
+    storage_client = storage.Client(
+        project=config.gcp_project,
+        credentials=credentials,
+    )
+    bq_client = bigquery.Client(
+        project=config.gcp_project,
+        credentials=credentials,
+    )
 
     run_prefix = f"parleman-load/{config.bq_dataset}"
     table_payloads: dict[str, list[dict[str, Any]]] = {
@@ -70,7 +79,7 @@ def upload_to_bigquery(parsed_debats: DebatParseResult, config: ProjectConfig) -
             bq_client=bq_client,
             table_name=table_name,
             source_uri=source_uri,
-            schema=TABLE_SCHEMAS[table_name],
+            schema=DEBATS_SCHEMAS[table_name],
             gcp_project=config.gcp_project,
             bq_dataset=config.bq_dataset,
         )

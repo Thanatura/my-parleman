@@ -1,7 +1,7 @@
 from google.cloud import bigquery
 
 
-TABLE_SCHEMAS: dict[str, list[bigquery.SchemaField]] = {
+DEBATS_SCHEMAS: dict[str, list[bigquery.SchemaField]] = {
     "comptes_rendus": [
         bigquery.SchemaField("uid", "STRING"),
         bigquery.SchemaField("seance_ref", "STRING"),

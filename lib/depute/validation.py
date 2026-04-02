@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from lib.depute.bq_schemas import SCHEMA
+from lib.depute.bq_schemas import DEPUTES_SCHEMAS
 from lib.depute.models import BigQueryRow
 
 
@@ -9,7 +9,7 @@ class ValidationError(ValueError):
 
 
 def validate_rows_for_table(table_name: str, rows: Sequence[BigQueryRow]) -> None:
-    schema = SCHEMA[table_name]
+    schema = DEPUTES_SCHEMAS[table_name]
     required_fields = [field.name for field in schema if field.mode == "REQUIRED"]
 
     for idx, row in enumerate(rows):
