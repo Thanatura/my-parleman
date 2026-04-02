@@ -1,19 +1,10 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Any
+
+from lib.bq_utils.models import BigQueryRow
 
 
-@dataclass(slots=True)
-class BigQueryRow:
-    def to_bq_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        for key, value in payload.items():
-            if isinstance(value, (date, datetime)):
-                payload[key] = value.isoformat()
-        return payload
-
-
-@dataclass(slots=True)
+@dataclass
 class ActeurRow(BigQueryRow):
     uid: str
     civilite: str | None
@@ -32,7 +23,7 @@ class ActeurRow(BigQueryRow):
     ingested_at: datetime
 
 
-@dataclass(slots=True)
+@dataclass
 class AdresseRow(BigQueryRow):
     uid: str | None
     acteur_uid: str
@@ -49,7 +40,7 @@ class AdresseRow(BigQueryRow):
     ingested_at: datetime
 
 
-@dataclass(slots=True)
+@dataclass(frozen=False)
 class MandatRow(BigQueryRow):
     uid: str | None
     acteur_ref: str
@@ -75,7 +66,7 @@ class MandatRow(BigQueryRow):
     ingested_at: datetime
 
 
-@dataclass(slots=True)
+@dataclass
 class OrganeRow(BigQueryRow):
     uid: str | None
     xsi_type: str | None
@@ -98,7 +89,7 @@ class OrganeRow(BigQueryRow):
     ingested_at: datetime
 
 
-@dataclass(slots=True)
+@dataclass
 class DeportRow(BigQueryRow):
     uid: str | None
     legislature: str | None

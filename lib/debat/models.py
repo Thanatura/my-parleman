@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
+from lib.bq_utils.models import BigQueryRow
 
-@dataclass(frozen=True)
-class CompteRendu:
+
+@dataclass
+class CompteRendu(BigQueryRow):
     uid: str | None
     seance_ref: str | None
     session_ref: str | None
@@ -18,8 +20,8 @@ class CompteRendu:
     version: str | None
 
 
-@dataclass(frozen=True)
-class PointSeance:
+@dataclass
+class PointSeance(BigQueryRow):
     compte_rendu_uid: str | None
     point_id: str | None
     point_type: str
@@ -33,8 +35,8 @@ class PointSeance:
     titre: str
 
 
-@dataclass(frozen=True)
-class Intervention:
+@dataclass
+class Intervention(BigQueryRow):
     compte_rendu_uid: str | None
     point_id: str | None
     point_valeur_ptsodj: str | None
@@ -51,7 +53,7 @@ class Intervention:
     texte: str
 
 
-@dataclass(frozen=True)
+@dataclass
 class DebatParseResult:
     comptes_rendus: list[CompteRendu]
     points: list[PointSeance]

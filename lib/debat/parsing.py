@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-from lib.debat.entities import CompteRendu, DebatParseResult, Intervention, PointSeance
+from lib.debat.models import CompteRendu, DebatParseResult, Intervention, PointSeance
 
 AN_NS = "http://schemas.assemblee-nationale.fr/referentiel"
 NS = {"an": AN_NS}

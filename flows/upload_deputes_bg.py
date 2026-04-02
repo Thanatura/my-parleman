@@ -1,4 +1,10 @@
+from typing import Sequence
+
+from prefect.artifacts import create_table_artifact
+
+from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
+from lib.depute.bq_schemas import DEPUTES_SCHEMAS
 from lib.depute.models import AdresseRow, ActeurRow, DeportRow, MandatRow, OrganeRow
 from lib.depute.parsing import (
     parse_acteurs,
@@ -7,16 +13,18 @@ from lib.depute.parsing import (
     parse_mandats,
     parse_organes,
 )
-from lib.depute.pipeline_core import fetch_zip_data, load_all_tables
+from lib.bq_utils.bq_utils import load_all_tables
 from prefect import flow, get_run_logger, task
 from prefect.tasks import task_input_hash
+
+from lib.extract import fetch_zip_file
 
 
 @task(cache_key_fn=task_input_hash, cache_expiration=None)
 def fetch_zip(url: str) -> bytes:
     logger = get_run_logger()
     logger.info(f"Downloading {url}")
-    content = fetch_zip_data(url)
+    content = fetch_zip_file(url)
     logger.info(f"Downloaded {len(content):,} bytes")
     return content
 
@@ -70,22 +78,30 @@ def load_to_bigquery(
     deports: list[DeportRow],
     config: ProjectConfig,
 ) -> None:
-    logger = get_run_logger()
-    counts = load_all_tables(
-        acteurs=acteurs,
-        adresses=adresses,
-        mandats=mandats,
-        organes=organes,
-        deports=deports,
+    table_rows: dict[str, Sequence[BigQueryRow]] = {
+        "acteurs": acteurs,
+        "adresses": adresses,
+        "mandats": mandats,
+        "organes": organes,
+        "deports": deports,
+    }
+    loaded_rows = load_all_tables(
+        table_rows=table_rows,
+        schemas=DEPUTES_SCHEMAS,
         config=config,
     )
 
-    for table_name, loaded_count in counts.items():
-        logger.info(
-            f"Loaded {loaded_count:,} rows into {config.gcp_project}.{config.bq_dataset}.{table_name}"
-        )
-
-    logger.info("All tables loaded successfully.")
+    create_table_artifact(
+        key="bq-load-summary",
+        table=[
+            {
+                "table": table_name,
+                "loaded_rows": loaded_rows[table_name],
+            }
+            for table_name in table_rows
+        ],
+        description="depute load summary by table",
+    )
 
 
 @flow(name="an-deputes-pipeline", log_prints=True)

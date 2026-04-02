@@ -1,15 +1,13 @@
-from dataclasses import asdict
 from datetime import timedelta
-from typing import Any
+from typing import Sequence
 
-from google.cloud import bigquery, storage
-from google.oauth2 import service_account
 from prefect import flow, task
 from prefect.artifacts import create_table_artifact
 
 from prefect.cache_policies import INPUTS, NO_CACHE
 from prefect.tasks import task_input_hash
-from lib.bq_utils import load_table_from_uri, upload_jsonl_to_gcs
+from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
 from lib.debat import DebatParseResult, parse_debats_files
 from lib.debat.bq_schemas import DEBATS_SCHEMAS
@@ -45,44 +43,17 @@ def parse_debat_contents(debat_contents: list[str]) -> DebatParseResult:
 
 @task(cache_policy=NO_CACHE)
 def upload_to_bigquery(parsed_debats: DebatParseResult, config: ProjectConfig) -> None:
-    credentials = service_account.Credentials.from_service_account_info(
-        config.service_account_info
-    )
-    storage_client = storage.Client(
-        project=config.gcp_project,
-        credentials=credentials,
-    )
-    bq_client = bigquery.Client(
-        project=config.gcp_project,
-        credentials=credentials,
-    )
-
-    run_prefix = f"parleman-load/{config.bq_dataset}"
-    table_payloads: dict[str, list[dict[str, Any]]] = {
-        "comptes_rendus": [asdict(item) for item in parsed_debats.comptes_rendus],
-        "points_seance": [asdict(item) for item in parsed_debats.points],
-        "interventions": [asdict(item) for item in parsed_debats.interventions],
+    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+        "comptes_rendus": parsed_debats.comptes_rendus,
+        "points_seance": parsed_debats.points,
+        "interventions": parsed_debats.interventions,
     }
 
-    loaded_rows: dict[str, int] = {}
-    uris: dict[str, str] = {}
-    for table_name, records in table_payloads.items():
-        blob_path = f"{run_prefix}/{table_name}.jsonl"
-        source_uri = upload_jsonl_to_gcs(
-            storage_client=storage_client,
-            bucket_name=config.gcs_load_bucket,
-            blob_path=blob_path,
-            records=records,
-        )
-        uris[table_name] = source_uri
-        loaded_rows[table_name] = load_table_from_uri(
-            bq_client=bq_client,
-            table_name=table_name,
-            source_uri=source_uri,
-            schema=DEBATS_SCHEMAS[table_name],
-            gcp_project=config.gcp_project,
-            bq_dataset=config.bq_dataset,
-        )
+    loaded_rows = load_all_tables(
+        table_rows=table_payloads,
+        schemas=DEBATS_SCHEMAS,
+        config=config,
+    )
 
     create_table_artifact(
         key="bq-load-summary",
@@ -90,11 +61,10 @@ def upload_to_bigquery(parsed_debats: DebatParseResult, config: ProjectConfig) -
             {
                 "table": table_name,
                 "loaded_rows": loaded_rows[table_name],
-                "source_uri": uris[table_name],
             }
             for table_name in table_payloads
         ],
-        description="BigQuery load summary by table",
+        description="debats load summary by table",
     )
 
 
