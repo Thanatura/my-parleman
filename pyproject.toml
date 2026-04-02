@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "parleman"
 version = "0.1.0"
@@ -6,10 +10,9 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "google-cloud-bigquery>=3.38.0",
+    "google-cloud-storage>=3.10.1",
     "pre-commit>=4.5.1",
     "prefect>=3.6.24",
-    "pyyaml>=6.0.2",
-    "python-dotenv>=1.0.0",
     "requests>=2.32.0",
 ]
 
@@ -19,3 +22,9 @@ dev = [
     "pytest>=9.0.2",
     "ruff>=0.15.8",
 ]
+
+[tool.setuptools]
+packages = ["lib"]
+
+[tool.mypy]
+disable_error_code = ["untyped-decorator"]

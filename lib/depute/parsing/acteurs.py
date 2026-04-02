@@ -5,12 +5,24 @@ from lib.depute.parsing.common import read_json_files_from_zip, to_date, to_str,
 
 
 def _acteur_node(raw_payload: dict[str, Any]) -> dict[str, Any]:
-    return raw_payload["acteur"]
+    acteur = raw_payload["acteur"]
+    if not isinstance(acteur, dict):
+        raise ValueError(f"Expected 'acteur' to be a dict, got {type(acteur)}")
+    return acteur
 
 
 def _acteur_uid(acteur: dict[str, Any]) -> str:
     uid = acteur["uid"]
-    return uid["#text"] if isinstance(uid, dict) else uid
+    if isinstance(uid, dict):
+        extracted_uid = uid["#text"]
+        if not isinstance(extracted_uid, str):
+            raise ValueError(
+                f"Expected 'uid.#text' to be a str, got {type(extracted_uid)}"
+            )
+        return extracted_uid
+    elif isinstance(uid, str):
+        return uid
+    raise ValueError(f"Expected 'uid' to be a str or dict, got {type(uid)}")
 
 
 def parse_acteurs(zip_bytes: bytes) -> list[ActeurRow]:

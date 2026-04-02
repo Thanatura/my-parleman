@@ -1,6 +1,6 @@
 from google.cloud import bigquery
 
-SCHEMA: dict[str, list[bigquery.SchemaField]] = {
+DEPUTES_SCHEMAS: dict[str, list[bigquery.SchemaField]] = {
     "acteurs": [
         bigquery.SchemaField("uid", "STRING", mode="REQUIRED"),
         bigquery.SchemaField("civilite", "STRING"),
