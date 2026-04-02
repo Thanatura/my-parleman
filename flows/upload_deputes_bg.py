@@ -1,7 +1,4 @@
-import os
-from pathlib import Path
-
-from dotenv import load_dotenv
+from lib.config import ProjectConfig, get_config
 from lib.depute.models import AdresseRow, ActeurRow, DeportRow, MandatRow, OrganeRow
 from lib.depute.parsing import (
     parse_acteurs,
@@ -13,24 +10,6 @@ from lib.depute.parsing import (
 from lib.depute.pipeline_core import fetch_zip_data, load_all_tables
 from prefect import flow, get_run_logger, task
 from prefect.tasks import task_input_hash
-
-_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
-if not _ENV_PATH.exists():
-    raise FileNotFoundError(f"Missing required .env file at {_ENV_PATH}")
-
-load_dotenv(_ENV_PATH)
-
-
-def _require_env(var_name: str) -> str:
-    value = os.getenv(var_name, "").strip()
-    if not value:
-        raise RuntimeError(f"Missing required environment variable: {var_name}")
-    return value
-
-
-DATA_URL = _require_env("DATA_URL")
-GCP_PROJECT = _require_env("GCP_PROJECT")
-BQ_DATASET = _require_env("BQ_DATASET")
 
 
 @task(cache_key_fn=task_input_hash, cache_expiration=None)
@@ -89,6 +68,7 @@ def load_to_bigquery(
     mandats: list[MandatRow],
     organes: list[OrganeRow],
     deports: list[DeportRow],
+    config: ProjectConfig,
 ) -> None:
     logger = get_run_logger()
     counts = load_all_tables(
@@ -97,27 +77,28 @@ def load_to_bigquery(
         mandats=mandats,
         organes=organes,
         deports=deports,
-        project=GCP_PROJECT,
-        dataset=BQ_DATASET,
+        project=config.gcp_project,
+        dataset=config.bq_dataset,
     )
 
     for table_name, loaded_count in counts.items():
         logger.info(
-            f"Loaded {loaded_count:,} rows into {GCP_PROJECT}.{BQ_DATASET}.{table_name}"
+            f"Loaded {loaded_count:,} rows into {config.gcp_project}.{config.bq_dataset}.{table_name}"
         )
 
     logger.info("All tables loaded successfully.")
 
 
 @flow(name="an-deputes-pipeline", log_prints=True)
-def an_deputes_pipeline(url: str = DATA_URL) -> None:
-    zip_bytes = fetch_zip(url)
+def an_deputes_pipeline() -> None:
+    config = get_config()
+    zip_bytes = fetch_zip(config.deputes_url)
     acteurs = parse_acteurs_table(zip_bytes)
     adresses = parse_adresses_table(zip_bytes)
     mandats = parse_mandats_table(zip_bytes)
     organes = parse_organes_table(zip_bytes)
     deports = parse_deports_table(zip_bytes)
-    load_to_bigquery(acteurs, adresses, mandats, organes, deports)
+    load_to_bigquery(acteurs, adresses, mandats, organes, deports, config)
 
 
 if __name__ == "__main__":
