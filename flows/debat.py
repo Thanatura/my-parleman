@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Any
 
 from prefect import flow, task
+from prefect.artifacts import create_table_artifact
 
 from prefect.cache_policies import INPUTS, NO_CACHE
 from prefect.tasks import task_input_hash
@@ -73,6 +74,19 @@ def upload_to_bigquery(parsed_debats: DebatParseResult, config: ProjectConfig) -
             gcp_project=config.gcp_project,
             bq_dataset=config.bq_dataset,
         )
+
+    create_table_artifact(
+        key="bq-load-summary",
+        table=[
+            {
+                "table": table_name,
+                "loaded_rows": loaded_rows[table_name],
+                "source_uri": uris[table_name],
+            }
+            for table_name in table_payloads
+        ],
+        description="BigQuery load summary by table",
+    )
 
 
 @flow
