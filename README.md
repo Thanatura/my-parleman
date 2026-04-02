@@ -1,36 +1,162 @@
 # ParlemAN
 
-# Setup du projet
+Pipeline for fetching/parsing French National Assembly data, with BigQuery loading and Metabase visualization.
 
-1. Installer [uv](https://docs.astral.sh/uv/getting-started/installation/)
-2. Synchroniser les dépendances avec `uv sync`
-3. Installer le hook de pre-commit avec `uv run pre-commit install` et `uv run pre-commit autoupdate`
+## Installation
 
-# Structure du projet
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. *(Optional)* Install [direnv](https://direnv.net/docs/installation.html) for automatic environment loading:
+   ```bash
+   # macOS
+   brew install direnv
 
+   # Linux
+   curl -sfL https://direnv.net/install.sh | bash
+   ```
+   Then allow the project directory:
+   ```bash
+   direnv allow
+   ```
+3. Sync dependencies
+4. Install pre-commit hooks *(optional but recommended)*
 
-│
-├── infra/                      # Terraform (infrastructure)
-│   ├── main.tf
-│   └── variables.tf
-│  
-├── flows/                      # Prefect flows
-│   ├── api_to_gcs_flow.py
-│   └── tasks/
-│       ├── fetch_api.py
-│       └── upload_gcs.py
-│
-├── config/
-│   ├── settings.yaml
-│   └── secrets.env
-│
-├── scripts/                    # scripts utilitaires
-│   └── run_flow.py
-│
-├── lib/                    # librairies utilitaires
-│   └── parse_xml.py
-│
-├── requirements.txt
-├── .env
-├── .gitignore
-└── README.md
+```bash
+uv sync
+uv run pre-commit install
+uv run pre-commit autoupdate
+```
+
+## Configuration
+
+All configuration is centralized in `.env`. Copy from the template and customize as needed:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` to override defaults:
+- `GCP_PROJECT`: BigQuery project ID (default: parleman-491810)
+- `BQ_DATASET`: BigQuery dataset name (default: ParlemAN_tests)
+- `DATA_URL`: Assembly open data archive URL (defaults to latest)
+- `GOOGLE_APPLICATION_CREDENTIALS`: Path to GCP service account JSON
+
+### Environment Loading
+
+**Python**: Configuration loads from `.env` via `python-dotenv` in runtime modules
+
+**Shell**: If [direnv](https://direnv.net/) is installed, variables auto-load when entering the directory via `.envrc`
+
+> Never commit `.env` or `.secrets/` to git. Use `.env.example` as a template.
+
+## GCP Setup
+
+1. Create service account:
+
+```bash
+export GCP_PROJECT_ID="parleman-491810"
+export SA_NAME="parleman-bq-runner"
+
+gcloud iam service-accounts create "$SA_NAME" \
+  --project "$GCP_PROJECT_ID" \
+  --display-name "ParlemAN BigQuery Runner"
+```
+
+2. Grant minimal roles:
+
+```bash
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/bigquery.jobUser"
+
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/bigquery.dataEditor"
+```
+
+3. Create local key:
+
+```bash
+mkdir -p .secrets
+gcloud iam service-accounts keys create .secrets/parleman-sa.json \
+  --iam-account "${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --project "$GCP_PROJECT_ID"
+```
+
+4. Set environment variable in `.env`:
+
+```bash
+GOOGLE_APPLICATION_CREDENTIALS=.secrets/parleman-sa.json
+```
+
+## Run Pipeline
+
+```bash
+uv run python -m flows.upload_deputes_bg
+```
+
+## Metabase (local)
+
+Requires: Docker + Docker Compose.
+
+1. Setup environment:
+
+```bash
+cp config/metabase.env.example config/metabase.env
+```
+
+2. Set strong encryption key in `config/metabase.env`
+
+3. Start Metabase:
+
+```bash
+cd infra
+docker compose up -d
+```
+
+Access:
+- Metabase: http://localhost:3000
+- Adminer (inspect internal PostgreSQL): http://localhost:8080
+
+Adminer credentials:
+- System: PostgreSQL
+- Server: metabase-db
+- Username: metabase
+- Password: metabase
+- Database: metabase
+
+Configure BigQuery connection in Metabase:
+- Admin settings > Databases > Add database
+- Type: BigQuery
+- Project ID: parleman-491810
+- Dataset: ParlemAN_tests
+- Authentication: Upload service account JSON
+
+Stop Metabase:
+
+```bash
+cd infra
+docker compose down
+```
+
+## Project Structure
+
+```text
+config/           # Configuration templates
+flows/            # Prefect pipeline orchestration
+infra/            # Docker Compose stack
+lib/              # Core modules (parsing, loading, validation)
+scripts/          # Utility scripts and SQL views
+tests/            # Unit tests
+.env              # Environment variables (do not commit with real values)
+.env.example      # Template for .env
+pyproject.toml    # Project metadata and dependencies
+README.md         # This file
+```
+
+## Security
+
+- **Never commit real `.env` files**: Use `.env.example` as a template for team distribution
+- **Never commit `.secrets/` directory**: Contains sensitive GCP service account keys
+- **`.envrc` is safe to commit**: It's configuration for loading `.env`, not secrets themselves
+- Rotate service account keys regularly (keep max 2 keys per service account)
+- Use minimal IAM roles (`bigquery.jobUser` + `bigquery.dataEditor`) for service accounts
