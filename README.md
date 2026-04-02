@@ -18,9 +18,12 @@ Pipeline for fetching/parsing French National Assembly data, with BigQuery loadi
    direnv allow
    ```
 3. Sync dependencies
+4. Install pre-commit hooks *(optional but recommended)*
 
 ```bash
 uv sync
+uv run pre-commit install
+uv run pre-commit autoupdate
 ```
 
 ## Configuration
