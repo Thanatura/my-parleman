@@ -41,9 +41,9 @@ DEBATS_SCHEMAS: dict[str, list[bigquery.SchemaField]] = {
         bigquery.SchemaField("code_style", "STRING"),
         bigquery.SchemaField("code_parole", "STRING"),
         bigquery.SchemaField("roledebat", "STRING"),
-        bigquery.SchemaField("speaker_name", "STRING"),
-        bigquery.SchemaField("speaker_id", "STRING"),
-        bigquery.SchemaField("speaker_qualite", "STRING"),
+        bigquery.SchemaField("orateur_nom", "STRING"),
+        bigquery.SchemaField("orateur_id", "STRING"),
+        bigquery.SchemaField("orateur_qualite", "STRING"),
         bigquery.SchemaField("texte", "STRING"),
     ],
 }

@@ -47,9 +47,9 @@ class Intervention(BigQueryRow):
     code_style: str | None
     code_parole: str | None
     roledebat: str | None
-    speaker_name: str | None
-    speaker_id: str | None
-    speaker_qualite: str | None
+    orateur_nom: str | None
+    orateur_id: str | None
+    orateur_qualite: str | None
     texte: str
 
 

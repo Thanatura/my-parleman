@@ -31,9 +31,9 @@ def test_parse_debat_file_extracts_compte_rendu_points_interventions() -> None:
     assert intervention.compte_rendu_uid == "CRSANR5L17S2025O1N001"
     assert intervention.point_id == "3511370"
     assert intervention.intervention_id == "3511371"
-    assert intervention.speaker_name == "Mme la présidente"
-    assert intervention.speaker_id == "721908"
-    assert intervention.speaker_qualite == "Présidente"
+    assert intervention.orateur_nom == "Mme la présidente"
+    assert intervention.orateur_id == "721908"
+    assert intervention.orateur_qualite == "Présidente"
     assert intervention.texte == "Bonjour\nle monde (applaudissements)"
 
 

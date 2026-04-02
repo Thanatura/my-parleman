@@ -114,9 +114,9 @@ def parse_debat_file(xml_content: str) -> DebatParseResult:
                         code_style=paragraphe.attrib.get("code_style"),
                         code_parole=paragraphe.attrib.get("code_parole"),
                         roledebat=paragraphe.attrib.get("roledebat"),
-                        speaker_name=_find_text(first_orateur, "an:nom"),
-                        speaker_id=_find_text(first_orateur, "an:id"),
-                        speaker_qualite=_find_text(first_orateur, "an:qualite"),
+                        orateur_nom=_find_text(first_orateur, "an:nom"),
+                        orateur_id=_find_text(first_orateur, "an:id"),
+                        orateur_qualite=_find_text(first_orateur, "an:qualite"),
                         texte=_extract_text(paragraphe.find("an:texte", NS)),
                     )
                 )
