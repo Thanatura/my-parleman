@@ -1,13 +1,11 @@
-"""Business validation rules for parsed data before load."""
-
 from collections.abc import Sequence
 
-from lib.bq_schemas import SCHEMA
-from lib.models import BigQueryRow
+from lib.depute.bq_schemas import SCHEMA
+from lib.depute.models import BigQueryRow
 
 
 class ValidationError(ValueError):
-    """Raised when parsed rows violate load-time constraints."""
+    pass
 
 
 def validate_rows_for_table(table_name: str, rows: Sequence[BigQueryRow]) -> None:

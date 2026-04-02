@@ -1,8 +1,6 @@
-"""Mandats table parser."""
-
-from lib.models import MandatRow
-from lib.parsing.acteurs import _acteur_node, _acteur_uid
-from lib.parsing.common import (
+from lib.depute.models import MandatRow
+from lib.depute.parsing.acteurs import _acteur_node, _acteur_uid
+from lib.depute.parsing.common import (
     organe_refs,
     read_json_files_from_zip,
     to_bool,

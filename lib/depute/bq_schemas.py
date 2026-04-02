@@ -1,5 +1,3 @@
-"""BigQuery schemas, isolated from parsing and orchestration layers."""
-
 from google.cloud import bigquery
 
 SCHEMA: dict[str, list[bigquery.SchemaField]] = {

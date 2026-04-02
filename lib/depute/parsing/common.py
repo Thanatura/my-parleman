@@ -1,5 +1,3 @@
-"""Shared parsing utilities."""
-
 import io
 import json
 import zipfile

@@ -1,9 +1,7 @@
-"""Acteurs table parser."""
-
 from typing import Any
 
-from lib.models import ActeurRow
-from lib.parsing.common import read_json_files_from_zip, to_date, to_str, utc_now
+from lib.depute.models import ActeurRow
+from lib.depute.parsing.common import read_json_files_from_zip, to_date, to_str, utc_now
 
 
 def _acteur_node(raw_payload: dict[str, Any]) -> dict[str, Any]:

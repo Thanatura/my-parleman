@@ -1,8 +1,6 @@
-"""Adresses table parser."""
-
-from lib.models import AdresseRow
-from lib.parsing.acteurs import _acteur_node, _acteur_uid
-from lib.parsing.common import read_json_files_from_zip, to_str, utc_now
+from lib.depute.models import AdresseRow
+from lib.depute.parsing.acteurs import _acteur_node, _acteur_uid
+from lib.depute.parsing.common import read_json_files_from_zip, to_str, utc_now
 
 
 def parse_adresses(zip_bytes: bytes) -> list[AdresseRow]:

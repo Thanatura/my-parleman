@@ -1043,6 +1043,7 @@ dependencies = [
     { name = "google-cloud-bigquery" },
     { name = "pre-commit" },
     { name = "prefect" },
+    { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "requests" },
 ]
@@ -1058,6 +1059,7 @@ requires-dist = [
     { name = "google-cloud-bigquery", specifier = ">=3.38.0" },
     { name = "pre-commit", specifier = ">=4.5.1" },
     { name = "prefect", specifier = ">=3.6.24" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "requests", specifier = ">=2.32.0" },
 ]

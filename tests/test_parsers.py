@@ -2,8 +2,8 @@ import io
 import json
 import zipfile
 
-from lib.models import AdresseRow, ActeurRow, DeportRow, MandatRow, OrganeRow
-from lib.parsing import (
+from lib.depute.models import AdresseRow, ActeurRow, DeportRow, MandatRow, OrganeRow
+from lib.depute.parsing import (
     parse_acteurs,
     parse_adresses,
     parse_deports,
@@ -13,6 +13,7 @@ from lib.parsing import (
 
 
 def _sample_zip() -> bytes:
+    """Builds a minimal ZIP in memory for testing each parser."""
     acteur_payload = {
         "acteur": {
             "uid": "PA0001",
@@ -132,6 +133,7 @@ def _sample_zip() -> bytes:
 
 
 def test_parse_acteurs_returns_typed_rows() -> None:
+    """Verifies that the acteurs parser returns a typed and complete row."""
     rows = parse_acteurs(_sample_zip())
     assert len(rows) == 1
     assert isinstance(rows[0], ActeurRow)
@@ -139,6 +141,7 @@ def test_parse_acteurs_returns_typed_rows() -> None:
 
 
 def test_parse_adresses_returns_typed_rows() -> None:
+    """Verifies that the adresses parser returns the link to the acteur."""
     rows = parse_adresses(_sample_zip())
     assert len(rows) == 1
     assert isinstance(rows[0], AdresseRow)
@@ -146,6 +149,7 @@ def test_parse_adresses_returns_typed_rows() -> None:
 
 
 def test_parse_mandats_returns_typed_rows() -> None:
+    """Verifies that the mandats parser preserves the organ reference."""
     rows = parse_mandats(_sample_zip())
     assert len(rows) == 1
     assert isinstance(rows[0], MandatRow)
@@ -153,6 +157,7 @@ def test_parse_mandats_returns_typed_rows() -> None:
 
 
 def test_parse_organes_returns_typed_rows() -> None:
+    """Verifies that the organes parser returns a typed organ row."""
     rows = parse_organes(_sample_zip())
     assert len(rows) == 1
     assert isinstance(rows[0], OrganeRow)
@@ -160,6 +165,7 @@ def test_parse_organes_returns_typed_rows() -> None:
 
 
 def test_parse_deports_returns_typed_rows() -> None:
+    """Verifies that the deports parser returns the expected acteur reference."""
     rows = parse_deports(_sample_zip())
     assert len(rows) == 1
     assert isinstance(rows[0], DeportRow)

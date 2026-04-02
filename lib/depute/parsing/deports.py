@@ -1,7 +1,5 @@
-"""Deports table parser."""
-
-from lib.models import DeportRow
-from lib.parsing.common import read_json_files_from_zip, to_str, to_ts, utc_now
+from lib.depute.models import DeportRow
+from lib.depute.parsing.common import read_json_files_from_zip, to_str, to_ts, utc_now
 
 
 def parse_deports(zip_bytes: bytes) -> list[DeportRow]:

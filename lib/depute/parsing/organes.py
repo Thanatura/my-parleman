@@ -1,7 +1,5 @@
-"""Organes table parser."""
-
-from lib.models import OrganeRow
-from lib.parsing.common import (
+from lib.depute.models import OrganeRow
+from lib.depute.parsing.common import (
     read_json_files_from_zip,
     to_date,
     to_int,

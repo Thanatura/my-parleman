@@ -1,14 +1,31 @@
-"""Core service layer for data ingestion and BigQuery loading."""
-
 from collections.abc import Sequence
+import os
+from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
 from google.cloud import bigquery
 
-from lib.bq_schemas import SCHEMA
-from lib.constants import BQ_DATASET, GCP_PROJECT
-from lib.models import BigQueryRow
-from lib.validation import validate_all_tables
+from lib.depute.bq_schemas import SCHEMA
+from lib.depute.models import BigQueryRow
+from lib.depute.validation import validate_all_tables
+
+_ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
+if not _ENV_PATH.exists():
+    raise FileNotFoundError(f"Missing required .env file at {_ENV_PATH}")
+
+load_dotenv(_ENV_PATH)
+
+
+def _require_env(var_name: str) -> str:
+    value = os.getenv(var_name, "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {var_name}")
+    return value
+
+
+GCP_PROJECT = _require_env("GCP_PROJECT")
+BQ_DATASET = _require_env("BQ_DATASET")
 
 
 def fetch_zip_data(url: str, timeout: int = 120) -> bytes:

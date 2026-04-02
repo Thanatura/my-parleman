@@ -1,5 +1,3 @@
-"""Typed row models for pipeline outputs."""
-
 from dataclasses import asdict, dataclass
 from datetime import date, datetime
 from typing import Any

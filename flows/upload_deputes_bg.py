@@ -1,22 +1,36 @@
-"""Prefect orchestration for the AN deputes pipeline."""
+import os
+from pathlib import Path
 
-from lib.constants import BQ_DATASET, DATA_URL, GCP_PROJECT
-from lib.models import AdresseRow, ActeurRow, DeportRow, MandatRow, OrganeRow
-from lib.parsing import (
+from dotenv import load_dotenv
+from lib.depute.models import AdresseRow, ActeurRow, DeportRow, MandatRow, OrganeRow
+from lib.depute.parsing import (
     parse_acteurs,
     parse_adresses,
     parse_deports,
     parse_mandats,
     parse_organes,
 )
-from lib.pipeline_core import fetch_zip_data, load_all_tables
+from lib.depute.pipeline_core import fetch_zip_data, load_all_tables
 from prefect import flow, get_run_logger, task
 from prefect.tasks import task_input_hash
 
+_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+if not _ENV_PATH.exists():
+    raise FileNotFoundError(f"Missing required .env file at {_ENV_PATH}")
 
-# ---------------------------------------------------------------------------
-# Parsing tasks
-# ---------------------------------------------------------------------------
+load_dotenv(_ENV_PATH)
+
+
+def _require_env(var_name: str) -> str:
+    value = os.getenv(var_name, "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {var_name}")
+    return value
+
+
+DATA_URL = _require_env("DATA_URL")
+GCP_PROJECT = _require_env("GCP_PROJECT")
+BQ_DATASET = _require_env("BQ_DATASET")
 
 
 @task(cache_key_fn=task_input_hash, cache_expiration=None)
@@ -95,17 +109,8 @@ def load_to_bigquery(
     logger.info("All tables loaded successfully.")
 
 
-# ---------------------------------------------------------------------------
-# Flow
-# ---------------------------------------------------------------------------
-
-
 @flow(name="an-deputes-pipeline", log_prints=True)
 def an_deputes_pipeline(url: str = DATA_URL) -> None:
-    """
-    Flux idempotent : téléchargement → parsing → WRITE_TRUNCATE dans BigQuery.
-    Relancer le flux à tout moment produit le même état final.
-    """
     zip_bytes = fetch_zip(url)
     acteurs = parse_acteurs_table(zip_bytes)
     adresses = parse_adresses_table(zip_bytes)
