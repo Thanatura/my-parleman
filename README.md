@@ -158,6 +158,13 @@ tests/            # Unit tests
 pyproject.toml    # Project metadata and dependencies
 README.md         # This file
 ```
+### Using the starter dbt parlemAn project
+
+Try running the following commands:
+- pip install dbt-bigquery
+- dbt debug
+- dbt run
+- dbt test
 
 ## Security
 
