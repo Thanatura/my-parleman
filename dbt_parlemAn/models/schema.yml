@@ -1,0 +1,53 @@
+version: 2
+
+sources:
+  - name: raw_parleman
+    description: Raw tables loaded by the ParlemAN ingestion pipelines.
+    database: "{{ env_var('GCP_PROJECT') }}"
+    schema: "{{ env_var('BQ_DATASET') }}"
+    tables:
+      - name: acteurs
+      - name: mandats
+      - name: organes
+      - name: interventions
+      - name: comptes_rendus
+
+models:
+  - name: stg_deputes
+    description: Staging model for deputes data.
+
+  - name: stg_mandats
+    description: Staging model for mandats data.
+
+  - name: stg_interventions
+    description: Staging model for interventions data.
+
+  - name: stg_commissions
+    description: Staging model for commissions data.
+
+  - name: stg_organes
+    description: Staging model for organes data.
+
+  - name: int_depute_mandats
+    description: Intermediate model linking deputes and mandats.
+
+  - name: int_depute_commissions
+    description: Intermediate model linking deputes and commissions.
+
+  - name: int_interventions_enriched
+    description: Intermediate enriched interventions model.
+
+  - name: mart_depute_activity
+    description: Mart for depute activity analytics.
+
+  - name: mart_groupe_activity
+    description: Mart for groupe activity analytics.
+
+  - name: mart_commission_activity
+    description: Mart for commission activity analytics.
+
+  - name: mart_interventions_time
+    description: Mart for interventions over time.
+
+  - name: mart_interventions_enriched
+    description: Final enriched interventions mart.
