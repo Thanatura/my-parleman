@@ -1,6 +1,6 @@
 from lib.depute.models import MandatRow
 from lib.depute.parsing.acteurs import _acteur_node, _acteur_uid
-from lib.depute.parsing.common import (
+from lib.parsing_common import (
     organe_refs,
     read_json_files_from_zip,
     to_bool,
