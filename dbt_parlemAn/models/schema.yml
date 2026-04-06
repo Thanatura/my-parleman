@@ -10,7 +10,16 @@ sources:
       - name: mandats
       - name: organes
       - name: interventions
+      - name: points_seance
       - name: comptes_rendus
+      - name: scrutins
+      - name: questions_ecrites
+      - name: questions_ecrites_renouvellements
+      - name: scrutin_votes_individuels
+      - name: scrutin_groupes_votes
+      - name: documents
+      - name: dossiers_parlementaires
+      - name: dossier_actes_legislatifs
 
 models:
   - name: stg_deputes
@@ -22,11 +31,35 @@ models:
   - name: stg_interventions
     description: Staging model for interventions data.
 
+  - name: stg_comptes_rendus
+    description: Staging model for comptes rendus data.
+
+  - name: stg_points_seance
+    description: Staging model for points de seance data.
+
   - name: stg_commissions
     description: Staging model for commissions data.
 
   - name: stg_organes
     description: Staging model for organes data.
+
+  - name: stg_scrutins
+    description: Staging model for scrutins data.
+
+  - name: stg_scrutin_groupes_votes
+    description: Staging model for aggregated votes by group.
+
+  - name: stg_scrutin_votes_individuels
+    description: Staging model for individual scrutin votes.
+
+  - name: stg_documents
+    description: Staging model for legislative documents.
+
+  - name: stg_dossiers_parlementaires
+    description: Staging model for parliamentary dossiers.
+
+  - name: stg_dossier_actes_legislatifs
+    description: Staging model for dossier legislative acts.
 
   - name: int_depute_mandats
     description: Intermediate model linking deputes and mandats.
