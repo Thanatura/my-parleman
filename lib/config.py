@@ -10,6 +10,7 @@ class ProjectConfig:
     deputes_url: str
     scrutins_url: str
     questions_ecrites_url: str
+    dossiers_legislatifs_url: str
     gcp_project: str
     bq_dataset: str
     gcs_load_bucket: str
@@ -39,6 +40,7 @@ def get_config() -> ProjectConfig:
             deputes_url=os.environ["DEPUTES_URL"],
             scrutins_url=os.environ["SCRUTINS_URL"],
             questions_ecrites_url=os.environ["QUESTIONS_ECRITES_URL"],
+            dossiers_legislatifs_url=os.environ["DOSSIERS_LEGISLATIFS_URL"],
             service_account_info=_get_service_account_info(),
         )
     except KeyError as e:

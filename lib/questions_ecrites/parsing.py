@@ -1,6 +1,6 @@
 from typing import Any
 
-from lib.depute.parsing.common import read_json_files_from_zip, to_date, to_str
+from lib.parsing_common import read_json_files_from_zip, to_date, to_str
 from lib.questions_ecrites.models import (
     QuestionEcriteMinAttribRow,
     QuestionEcriteParseResult,
@@ -44,11 +44,11 @@ def parse_questions_ecrites(zip_bytes: bytes) -> QuestionEcriteParseResult:
         identifiant = _first_dict(question.get("identifiant"))
         indexation = _first_dict(question.get("indexationAN"))
         analyses = _first_dict(indexation.get("analyses"))
-        
+
         auteur = _first_dict(question.get("auteur"))
         identite = _first_dict(auteur.get("identite"))
         groupe = _first_dict(auteur.get("groupe"))
-        
+
         min_int = _first_dict(question.get("minInt"))
 
         # Textes
