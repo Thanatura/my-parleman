@@ -21,7 +21,10 @@ select
   i.code_parole,
   i.roledebat,
   i.orateur_nom,
-  i.orateur_id as depute_uid,
+  case
+    when i.orateur_id is null then null
+    else concat('PA', cast(i.orateur_id as string))
+  end as depute_uid,
   i.orateur_qualite,
   i.texte,
   safe_cast(cr.date_seance as date) as date_seance,
