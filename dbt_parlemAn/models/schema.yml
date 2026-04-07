@@ -96,3 +96,9 @@ models:
 
   - name: mart_interventions_enriched
     description: Final enriched interventions mart.
+
+  - name: mart_deputes_circonscriptions
+    description: Mart map-ready for deputes and circonscriptions analytics.
+
+  - name: mart_circonscription_activity
+    description: One row per circonscription with deputes and interventions aggregates.
