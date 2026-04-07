@@ -69,6 +69,18 @@ models:
 
   - name: int_interventions_enriched
     description: Intermediate enriched interventions model.
+  
+  - name: int_groupes
+    description: Intermediate model for groupes data.
+
+  - name: int_scrutin_groupes
+    description: Intermediate model for scrutin group votes.
+  
+  - name: int_scrutin_groupes_enriched
+    description: Intermediate enriched model for scrutin group votes.
+
+  - name: mart_groupes_co_vote
+    description: Mart for co-voting patterns between groupes.
 
   - name: mart_depute_activity
     description: Mart for depute activity analytics.
