@@ -5,6 +5,7 @@ with organes as (
 select
       organe_uid as groupe_uid,
       libelle as groupe_libelle,
+      libelle_abrev as groupe_libelle_abrev,
       gp_position_politique,
       gp_couleur,
       legislature as groupe_legislature,
