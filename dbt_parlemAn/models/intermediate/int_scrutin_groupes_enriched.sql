@@ -1,3 +1,5 @@
+{{ config(materialized='view') }}
+
 with groupes as (select * from {{ ref('int_groupes') }}),
      scrutins_groupes as (select * from {{ ref('int_scrutin_groupes') }})
      select 

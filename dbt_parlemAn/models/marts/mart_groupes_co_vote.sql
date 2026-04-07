@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+{{ config(materialized='table') }}
 
 with scrutins_groupes_enriched as (select * from {{ ref('int_scrutin_groupes_enriched') }})
      select 
