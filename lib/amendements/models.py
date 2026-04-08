@@ -15,6 +15,7 @@ class AmendementRow(BigQueryRow):
     prefixe_organe_examen: str | None
     examen_ref: str | None
     texte_legislatif_ref: str | None
+    dossier_legislatif_ref: str | None
 
     # Targeting text location
     division_titre: str | None

@@ -25,6 +25,7 @@ AMENDEMENTS_SCHEMAS: dict[str, list[bigquery.SchemaField]] = {
         bigquery.SchemaField("auteur_type", "STRING"),
         bigquery.SchemaField("auteur_acteur_ref", "STRING"),
         bigquery.SchemaField("auteur_groupe_politique_ref", "STRING"),
+        bigquery.SchemaField("dossier_legislatif_ref", "STRING"),
     ],
     "amendement_signataires": [
         bigquery.SchemaField("amendement_uid", "STRING", mode="REQUIRED"),

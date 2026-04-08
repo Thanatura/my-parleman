@@ -1,10 +1,11 @@
 from typing import Any
 
-from lib.depute.parsing.common import (
-    read_json_files_from_zip,
+import json
+from lib.parsing_common import (
     to_str,
     to_date,
 )
+from lib.extract import extract_zip_contents_with_dossier
 from lib.amendements.models import (
     AmendementRow,
     AmendementSignataireRow,
@@ -27,7 +28,12 @@ def parse_amendements(zip_bytes: bytes) -> AmendementParseResult:
     signataires: list[AmendementSignataireRow] = []
     cosignataires: list[AmendementsCosignataireRow] = []
 
-    for payload in read_json_files_from_zip(zip_bytes, prefix="json/"):
+    for dossier_id, file_content in extract_zip_contents_with_dossier(zip_bytes):
+        try:
+            payload = json.loads(file_content)
+        except json.JSONDecodeError:
+            continue
+            
         amendement_wrapper = (payload or {}).get("amendement")
         if not isinstance(amendement_wrapper, dict):
             continue
@@ -109,6 +115,7 @@ def parse_amendements(zip_bytes: bytes) -> AmendementParseResult:
                 texte_legislatif_ref=to_str(
                     amendement_wrapper.get("texteLegislatifRef")
                 ),
+                dossier_legislatif_ref=to_str(dossier_id),
                 division_titre=to_str(division.get("titre")),
                 article_designation_courte=to_str(
                     division.get("articleDesignationCourte")
