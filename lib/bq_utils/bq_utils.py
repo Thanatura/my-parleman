@@ -1,4 +1,5 @@
-from typing import Sequence
+from typing import Sequence, cast
+from uuid import UUID
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from prefect import get_run_logger
@@ -58,9 +59,12 @@ def load_all_tables(
     ensure_dataset(bq_client, config=config)
     logger.info("Finished ensuring dataset exists")
 
-    progress_artifact_id = create_progress_artifact(
-        progress=0.0,
-        description="Loading tables to BigQuery",
+    progress_artifact_id = cast(
+        UUID,
+        create_progress_artifact(
+            progress=0.0,
+            description="Loading tables to BigQuery",
+        )
     )
 
     nb_loaded_tables = 0

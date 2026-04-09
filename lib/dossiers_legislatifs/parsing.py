@@ -125,6 +125,9 @@ def _flatten_actes_legislatifs(
     # Extract LibelleActe
     libelle_acte = acte.get("libelleActe") or {}
 
+    # Extract vote ref
+    vote_ref = (acte.get("voteRefs") or {}).get("voteRef") or ""
+
     rows.append(
         DossierActeLegislatifRow(
             dossier_uid=dossier_uid,
@@ -136,6 +139,7 @@ def _flatten_actes_legislatifs(
             date_acte=to_ts(acte.get("dateActe")),
             type_acte=to_str(acte.get("@xsi:type")),
             texte_associe=to_str(acte.get("texteAssocie")),
+            vote_ref=to_str(vote_ref),
         )
     )
 

@@ -56,5 +56,6 @@ DOSSIERS_LEGISLATIFS_SCHEMAS: dict[str, list[bigquery.SchemaField]] = {
         bigquery.SchemaField("date_acte", "TIMESTAMP"),
         bigquery.SchemaField("type_acte", "STRING"),
         bigquery.SchemaField("texte_associe", "STRING"),
+        bigquery.SchemaField("vote_ref", "STRING"),
     ],
 }

@@ -83,6 +83,7 @@ class DossierActeLegislatifRow(BigQueryRow):
     date_acte: datetime | None
     type_acte: str | None  # Etape_Type, DepotInitiative_Type, etc.
     texte_associe: str | None
+    vote_ref: str | None
 
 
 @dataclass
