@@ -7,12 +7,13 @@ name = "parleman"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = "==3.13"
 dependencies = [
     "google-cloud-bigquery>=3.38.0",
     "google-cloud-storage>=3.10.1",
     "pre-commit>=4.5.1",
-    "prefect>=3.6.24",
+    "prefect-gcp[all-extras]>=0.6.17",
+    "prefect[gcp]>=3.6.24",
     "requests>=2.32.0",
 ]
 
