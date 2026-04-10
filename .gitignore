@@ -128,3 +128,4 @@ __marimo__/
 .python-version
 
 **/uv.lock
+**/query_log.sql
