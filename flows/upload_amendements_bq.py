@@ -64,7 +64,7 @@ def load_to_bigquery(
 
 
 @flow
-def amendements_pipeline() -> None:
+def amendements_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.amendements_url)
     amendements_result = parse_amendements_table(zip_bytes)
@@ -72,4 +72,4 @@ def amendements_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    amendements_pipeline()
+    amendements_flow()

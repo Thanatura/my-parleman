@@ -64,7 +64,7 @@ def load_to_bigquery(
 
 
 @flow
-def dossiers_legislatifs_pipeline() -> None:
+def dossiers_legislatifs_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.dossiers_legislatifs_url)
     dossiers_result = parse_dossiers_table(zip_bytes)
@@ -72,4 +72,4 @@ def dossiers_legislatifs_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    dossiers_legislatifs_pipeline()
+    dossiers_legislatifs_flow()
