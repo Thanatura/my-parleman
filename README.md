@@ -65,36 +65,63 @@ Edit `.env` to override defaults:
 
 ## GCP Setup
 
-1. Create service account:
+1. Create service accounts:
 
+For runner (runs flow code):
 ```bash
-export GCP_PROJECT_ID="parleman-491810"
-export SA_NAME="parleman-bq-runner"
+export GCP_PROJECT="parleman-491810"
+export SA_RUNNER_NAME="parleman-bq-runner"
 
-gcloud iam service-accounts create "$SA_NAME" \
-  --project "$GCP_PROJECT_ID" \
+gcloud iam service-accounts create "$SA_RUNNER_NAME" \
+  --project "$GCP_PROJECT" \
   --display-name "ParlemAN BigQuery Runner"
+```
+
+For worker (invokes jobs on Cloud Run):
+```bash
+export SA_WORKER_NAME="parleman-prefect-worker"
+
+gcloud iam service-accounts create "$SA_WORKER_NAME" \
+  --project "$GCP_PROJECT" \
+  --display-name "ParlemAN Prefect Worker"
 ```
 
 2. Grant minimal roles:
 
+For runner:
 ```bash
-gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
-  --member "serviceAccount:${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding "$GCP_PROJECT" \
+  --member "serviceAccount:${SA_RUNNER_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com" \
   --role "roles/bigquery.jobUser"
 
-gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
-  --member "serviceAccount:${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding "$GCP_PROJECT" \
+  --member "serviceAccount:${SA_RUNNER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --role "roles/bigquery.dataEditor"
 ```
+
+For worker:
+```bash
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_WORKER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/run.invoker"
+
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_WORKER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/artifactregistry.reader"
+
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_WORKER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/iam.serviceAccountUser"
+```
+
 
 3. Create local key:
 
 ```bash
 mkdir -p .secrets
 gcloud iam service-accounts keys create .secrets/parleman-sa.json \
-  --iam-account "${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
-  --project "$GCP_PROJECT_ID"
+  --iam-account "${SA_RUNNER_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com" \
+  --project "$GCP_PROJECT"
 ```
 
 4. Set environment variable in `.env`:
@@ -159,17 +186,6 @@ docker compose down
 docker run -p 4200:4200 -d --rm prefecthq/prefect:3-latest -- prefect server start --host 0.0.0.0
 ```
 
-You can also start a full local stack from `infra/prefect/docker-compose.yml`:
-
-```bash
-cd infra/prefect
-docker compose --profile server up -d --build
-```
-
-The `prefect-flows` service runs `flows/serve_flows.py` from the project image.
-Set `PREFECT_API_URL` to Prefect Cloud or use the `server` profile to run a local Prefect Server.
-
-
 ## Prefect Deployment (Cloud Run)
 
 ### Prerequisites
@@ -181,7 +197,7 @@ Set `PREFECT_API_URL` to Prefect Cloud or use the `server` profile to run a loca
 ### 1. Setup GCP Region
 
 ```bash
-gcloud config set run/region europe-west1
+gcloud config set run/region my-region
 ```
 
 ### 2. Create Prefect Variables
@@ -203,14 +219,14 @@ Deploy a Prefect worker to Cloud Run:
 
 ```bash
 gcloud run deploy prefect-worker \
-  --image=europe-west1-docker.pkg.dev/${GCP_PROJECT}/parleman-artifact-repo/parleman-flows:latest \
+  --image=europe-west1-docker.pkg.dev/${GCP_PROJECT}/parleman-artifact-repo/prefect-worker \
   --set-env-vars PREFECT_API_URL=${PREFECT_API_URL} \
-  --service-account nathan-casals-cloud-run@parleman-491810.iam.gserviceaccount.com \
+  --service-account ${SA_WORKER_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com \
   --no-cpu-throttling \
   --min-instances 1 \
   --memory=2Gi \
   --startup-probe httpGet.port=8080,httpGet.path=/health,initialDelaySeconds=100,periodSeconds=20,timeoutSeconds=20 \
-  --args "prefect","worker","start","--install-policy","never","--with-healthcheck","-p","arleman-work-pool","-t","cloud-run"
+  --args "prefect","worker","start","--install-policy","never","--with-healthcheck","-p","parleman-work-pool","-t","cloud-run"
 ```
 
 ### 4. Deploy Flows

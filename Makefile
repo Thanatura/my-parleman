@@ -18,7 +18,7 @@ deploy_prefect_worker:
 	gcloud run deploy prefect-worker \
 		--image=europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-worker \
 		--set-env-vars PREFECT_API_URL=${PREFECT_API_URL} \
-		--service-account nathan-casals-cloud-run@parleman-491810.iam.gserviceaccount.com \
+		--service-account ${SA_WORKER_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com \
 		--no-cpu-throttling \
 		--min-instances 1 --memory=2Gi \
 		--startup-probe httpGet.port=8080,httpGet.path=/health,initialDelaySeconds=100,periodSeconds=20,timeoutSeconds=20 \
