@@ -1,6 +1,7 @@
 from collections.abc import Iterable, Iterator, Mapping
 from typing import Sequence
 from uuid import uuid4
+from google.api_core.exceptions import NotFound
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from prefect import get_run_logger
@@ -42,6 +43,12 @@ def _load_rows_to_table_id(
     return len(json_rows)
 
 
+def _schema_signature(
+    schema: Sequence[bigquery.SchemaField],
+) -> list[dict[str, object]]:
+    return [field.to_api_repr() for field in schema]
+
+
 def _build_target_table_id(config: ProjectConfig, table_name: str) -> str:
     return f"{config.gcp_project}.{config.bq_dataset}.{table_name}"
 
@@ -62,7 +69,19 @@ def _create_or_replace_empty_table(
     table_id: str,
     schema: list[bigquery.SchemaField],
 ) -> None:
-    bq_client.create_table(bigquery.Table(table_id, schema=schema), exists_ok=True)
+    recreate_table = False
+    try:
+        existing_table = bq_client.get_table(table_id)
+        recreate_table = _schema_signature(existing_table.schema) != _schema_signature(
+            schema
+        )
+    except NotFound:
+        recreate_table = True
+
+    if recreate_table:
+        bq_client.delete_table(table_id, not_found_ok=True)
+        bq_client.create_table(bigquery.Table(table_id, schema=schema), exists_ok=True)
+
     bq_client.query(f"TRUNCATE TABLE `{table_id}`").result()
 
 
@@ -71,11 +90,18 @@ def _publish_staging_to_target(
     target_table_id: str,
     staging_table_id: str,
 ) -> None:
-    query = f"""
-        CREATE OR REPLACE TABLE `{target_table_id}`
-        AS SELECT * FROM `{staging_table_id}`
-    """
-    bq_client.query(query).result()
+    copy_job_config = bigquery.CopyJobConfig(
+        create_disposition=bigquery.CreateDisposition.CREATE_IF_NEEDED,
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+    )
+    source_table = bigquery.TableReference.from_string(staging_table_id)
+    destination_table = bigquery.TableReference.from_string(target_table_id)
+    job = bq_client.copy_table(
+        sources=source_table,
+        destination=destination_table,
+        job_config=copy_job_config,
+    )
+    job.result()
 
 
 def _delete_table_if_exists(bq_client: bigquery.Client, table_id: str) -> None:
