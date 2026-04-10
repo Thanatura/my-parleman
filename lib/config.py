@@ -14,7 +14,6 @@ class ProjectConfig:
     amendements_url: str
     gcp_project: str
     bq_dataset: str
-    gcs_load_bucket: str
     service_account_info: dict[str, Any]
 
 
@@ -37,7 +36,6 @@ def get_config() -> ProjectConfig:
             debat_url=os.environ["DEBAT_URL"],
             gcp_project=os.environ["GCP_PROJECT"],
             bq_dataset=os.environ["BQ_DATASET"],
-            gcs_load_bucket=os.environ["GCS_LOAD_BUCKET"],
             deputes_url=os.environ["DEPUTES_URL"],
             scrutins_url=os.environ["SCRUTINS_URL"],
             questions_ecrites_url=os.environ["QUESTIONS_ECRITES_URL"],

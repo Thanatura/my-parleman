@@ -33,7 +33,7 @@ def parse_amendements(zip_bytes: bytes) -> AmendementParseResult:
             payload = json.loads(file_content)
         except json.JSONDecodeError:
             continue
-            
+
         amendement_wrapper = (payload or {}).get("amendement")
         if not isinstance(amendement_wrapper, dict):
             continue
