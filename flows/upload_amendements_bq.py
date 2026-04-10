@@ -4,13 +4,13 @@ from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 from prefect.tasks import task_input_hash
 
+from lib.amendements.models import AmendementParseResult
+from lib.amendements.parsing import parse_amendements
 from lib.bq_utils.bq_utils import load_all_tables
 from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
 from lib.amendements import (
     AMENDEMENTS_SCHEMAS,
-    AmendementParseResult,
-    parse_amendements,
 )
 from lib.extract import fetch_zip_file
 
@@ -24,7 +24,7 @@ def fetch_zip(url: str) -> bytes:
     return content
 
 
-@task
+@task(cache_key_fn=task_input_hash, cache_expiration=None)
 def parse_amendements_table(zip_bytes: bytes) -> AmendementParseResult:
     logger = get_run_logger()
     result = parse_amendements(zip_bytes)
@@ -38,17 +38,25 @@ def parse_amendements_table(zip_bytes: bytes) -> AmendementParseResult:
 def load_to_bigquery(
     amendements_result: AmendementParseResult, config: ProjectConfig
 ) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    logger = get_run_logger()
+    table_names = [
+        "amendements",
+        "amendement_signataires",
+        "amendement_cosignataires",
+    ]
+
+    table_rows: dict[str, Sequence[BigQueryRow]] = {
         "amendements": amendements_result.amendements,
         "amendement_signataires": amendements_result.signataires,
         "amendement_cosignataires": amendements_result.cosignataires,
     }
 
     loaded_rows = load_all_tables(
-        table_rows=table_payloads,
+        table_rows=table_rows,
         schemas=AMENDEMENTS_SCHEMAS,
         config=config,
     )
+    logger.info("Finished loading amendements batches")
 
     create_table_artifact(
         key="bq-load-summary",
@@ -57,7 +65,7 @@ def load_to_bigquery(
                 "table": table_name,
                 "loaded_rows": loaded_rows[table_name],
             }
-            for table_name in table_payloads
+            for table_name in table_names
         ],
         description="amendements load summary by table",
     )
