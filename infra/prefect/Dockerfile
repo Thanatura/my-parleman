@@ -8,10 +8,11 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 COPY ./README.md ./README.md
 COPY ./pyproject.toml ./pyproject.toml
+COPY ./uv.lock ./uv.lock
 COPY ./flows ./flows
 COPY ./lib ./lib
 
-RUN uv sync --no-dev --no-cache --no-editable
+RUN uv sync --no-dev --no-cache --no-editable --frozen
 
 # Ensure the virtual environment's bin directory is in the PATH
 ENV PATH="/app/.venv/bin:$PATH" 
