@@ -14,7 +14,7 @@ from lib.depute.parsing import (
     parse_mandats,
     parse_organes,
 )
-from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils import load_all_tables
 from prefect import flow, get_run_logger, task
 from prefect.tasks import task_input_hash
 

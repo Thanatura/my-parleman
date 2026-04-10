@@ -5,7 +5,7 @@ from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 from prefect.tasks import task_input_hash
 
-from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils import load_all_tables
 from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
 from lib.dossiers_legislatifs import (
