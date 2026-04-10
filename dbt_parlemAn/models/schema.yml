@@ -112,5 +112,5 @@ models:
   - name: mart_circonscription_activity
     description: One row per circonscription with deputes and interventions aggregates.
 
-  - name: mart_deputes_place_hemicycle
+  - name: mart_depute_place_hemicycle
     description: Mart for mapping deputes to their place in the hemicycle.
