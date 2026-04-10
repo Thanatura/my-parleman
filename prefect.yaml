@@ -1,0 +1,62 @@
+---
+# Welcome to your prefect.yaml file! You can use this file for
+# storing and managing configuration for deploying your flows.
+# We recommend committing this file to source control along
+# with your flow code.
+
+# Generic metadata about this project
+name: ParlemAN
+prefect-version: 3.6.24
+
+# build section allows you to manage and build docker images
+
+# push section allows you to manage if and how this project
+# is uploaded to remote locations
+
+# pull section allows you to provide instructions for cloning
+# this project in remote locations
+pull:
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/Thanatura/ParlemAN.git
+    branch: dev
+    access_token: "{{ prefect.blocks.secret.github-token }}"
+
+# the deployments section allows you to provide configuration
+# for deploying flows
+deployments:
+- name: an_deputes_flow
+  version: null
+  tags: []
+  concurrency_limit: null
+  description: null
+  entrypoint: flows/upload_deputes_bq.py:an_deputes_flow
+  parameters: {}
+  work_pool:
+    name: parleman-work-pool
+    work_queue_name: null
+    job_variables: 
+      image: europe-west1-docker.pkg.dev/parleman-491810/parleman-artifact-repo/prefect-worker:latest
+      region: europe-west1
+      cpu: "1000m"
+      memory: "2Gi"
+      env:
+        SERVICE_ACCOUNT_INFO: "{{ prefect.blocks.secret.gcp-service-account-info }}"
+        GCP_PROJECT: "{{ prefect.variables.gcp-project }}"
+        BQ_DATASET: "{{ prefect.variables.bq-dataset }}"
+        PREFECT_API_URL: "{{ prefect.variables.prefect-api-url }}"
+        DOCKER_REGISTRY: "{{ prefect.variables.docker-registry }}"
+        METABASE_IMAGE: "{{ prefect.variables.metabase-image }}"
+        DEBAT_URL: "{{ prefect.variables.debat-url }}"
+        DEPUTES_URL: "{{ prefect.variables.deputes-url }}"
+        SCRUTINS_URL: "{{ prefect.variables.scrutins-url }}"
+        DOSSIERS_LEGISLATIFS_URL: "{{ prefect.variables.dossiers-legislatifs-url }}"
+        AMENDEMENTS_URL: "{{ prefect.variables.amendements-url }}"
+        QUESTIONS_ECRITES_URL: "{{ prefect.variables.questions-ecrites-url }}"
+
+    
+  schedules:
+  - cron: '15 10 * * 1-5'
+    timezone: Europe/Paris
+    day_or: true
+    active: true
+

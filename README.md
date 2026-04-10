@@ -2,6 +2,21 @@
 
 Pipeline for fetching/parsing French National Assembly data, with BigQuery loading and Metabase visualization.
 
+## Project Structure
+
+```text
+config/           # Configuration templates
+flows/            # Prefect pipeline orchestration
+infra/            # Docker Compose stack
+lib/              # Core modules (parsing, loading, validation)
+scripts/          # Utility scripts and SQL views
+tests/            # Unit tests
+.env              # Environment variables (do not commit with real values)
+.env.example      # Template for .env
+pyproject.toml    # Project metadata and dependencies
+README.md         # This file
+```
+
 ## Installation
 
 1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
@@ -144,20 +159,69 @@ docker compose down
 docker run -p 4200:4200 -d --rm prefecthq/prefect:3-latest -- prefect server start --host 0.0.0.0
 ```
 
-## Project Structure
+You can also start a full local stack from `infra/prefect/docker-compose.yml`:
 
-```text
-config/           # Configuration templates
-flows/            # Prefect pipeline orchestration
-infra/            # Docker Compose stack
-lib/              # Core modules (parsing, loading, validation)
-scripts/          # Utility scripts and SQL views
-tests/            # Unit tests
-.env              # Environment variables (do not commit with real values)
-.env.example      # Template for .env
-pyproject.toml    # Project metadata and dependencies
-README.md         # This file
+```bash
+cd infra/prefect
+docker compose --profile server up -d --build
 ```
+
+The `prefect-flows` service runs `flows/serve_flows.py` from the project image.
+Set `PREFECT_API_URL` to Prefect Cloud or use the `server` profile to run a local Prefect Server.
+
+
+## Prefect Deployment (Cloud Run)
+
+### Prerequisites
+
+- GCP project configured (`parleman-491810`)
+- `gcloud` CLI authenticated
+- Prefect Cloud account
+
+### 1. Setup GCP Region
+
+```bash
+gcloud config set run/region europe-west1
+```
+
+### 2. Create Prefect Variables
+
+Store environment variables in Prefect:
+
+```bash
+make setup_prefect_variables
+```
+Store sensitive service account JSON variable:
+
+```bash
+prefect block create secret
+```
+
+### 3. Deploy Prefect Worker
+
+Deploy a Prefect worker to Cloud Run:
+
+```bash
+gcloud run deploy prefect-worker \
+  --image=europe-west1-docker.pkg.dev/${GCP_PROJECT}/parleman-artifact-repo/parleman-flows:latest \
+  --set-env-vars PREFECT_API_URL=${PREFECT_API_URL} \
+  --service-account nathan-casals-cloud-run@parleman-491810.iam.gserviceaccount.com \
+  --no-cpu-throttling \
+  --min-instances 1 \
+  --memory=2Gi \
+  --startup-probe httpGet.port=8080,httpGet.path=/health,initialDelaySeconds=100,periodSeconds=20,timeoutSeconds=20 \
+  --args "prefect","worker","start","--install-policy","never","--with-healthcheck","-p","arleman-work-pool","-t","cloud-run"
+```
+
+### 4. Deploy Flows
+
+```bash
+prefect deploy
+```
+
+This reads configuration from `prefect.yaml` and deploys flows to your work pool.
+
+
 ### Using the starter dbt parlemAn project
 
 Try running the following commands:
