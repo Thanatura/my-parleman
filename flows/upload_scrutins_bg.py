@@ -57,7 +57,7 @@ def load_to_bigquery(
 
 
 @flow
-def scrutin_pipeline() -> None:
+def scrutin_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.scrutins_url)
     scrutins_result = parse_scrutins_table(zip_bytes)
@@ -65,4 +65,4 @@ def scrutin_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    scrutin_pipeline()
+    scrutin_flow()

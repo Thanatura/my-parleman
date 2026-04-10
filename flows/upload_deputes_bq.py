@@ -105,7 +105,7 @@ def load_to_bigquery(
 
 
 @flow(name="an-deputes-pipeline", log_prints=True)
-def an_deputes_pipeline() -> None:
+def an_deputes_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.deputes_url)
     acteurs = parse_acteurs_table(zip_bytes)
@@ -117,4 +117,4 @@ def an_deputes_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    an_deputes_pipeline()
+    an_deputes_flow()

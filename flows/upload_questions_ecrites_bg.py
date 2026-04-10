@@ -57,7 +57,7 @@ def load_to_bigquery(
 
 
 @flow
-def questions_ecrites_pipeline() -> None:
+def questions_ecrites_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.questions_ecrites_url)
     questions_ecrites_result = parse_questions_ecrites_table(zip_bytes)
@@ -65,4 +65,4 @@ def questions_ecrites_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    questions_ecrites_pipeline()
+    questions_ecrites_flow()
