@@ -14,7 +14,7 @@ x-prefect-common:
       image: europe-west1-docker.pkg.dev/parleman-491810/parleman-artifact-repo/prefect-worker:latest
       region: europe-west1
       cpu: "1000m"
-      memory: "2Gi"
+      memory: "4Gi"
       env:
         SERVICE_ACCOUNT_INFO: "{{ prefect.blocks.secret.gcp-service-account-info }}"
         GCP_PROJECT: "{{ prefect.variables.gcp-project }}"
