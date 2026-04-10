@@ -1,10 +1,9 @@
-from collections.abc import Iterable, Iterator
-from typing import Sequence, cast
-from uuid import UUID, uuid4
+from collections.abc import Iterable, Iterator, Mapping
+from typing import Sequence
+from uuid import uuid4
 from google.cloud import bigquery
 from google.oauth2 import service_account
 from prefect import get_run_logger
-from prefect.artifacts import create_progress_artifact, update_progress_artifact
 from lib.bq_utils.models import BigQueryRow
 from lib.bq_utils.validation import ensure_dataset, validate_rows_for_table
 from lib.config import ProjectConfig
@@ -23,7 +22,7 @@ def _create_bq_client(config: ProjectConfig) -> bigquery.Client:
 def _load_rows_to_table_id(
     bq_client: bigquery.Client,
     table_id: str,
-    rows: Sequence[BigQueryRow],
+    rows: Iterable[BigQueryRow],
     schema: list[bigquery.SchemaField],
     write_disposition: str,
 ) -> int:
@@ -40,7 +39,7 @@ def _load_rows_to_table_id(
 
     job = bq_client.load_table_from_json(json_rows, table_id, job_config=job_config)
     job.result()
-    return len(rows)
+    return len(json_rows)
 
 
 def _build_target_table_id(config: ProjectConfig, table_name: str) -> str:
@@ -86,8 +85,8 @@ def _delete_table_if_exists(bq_client: bigquery.Client, table_id: str) -> None:
 def _prepare_staging_tables(
     bq_client: bigquery.Client,
     table_names: Sequence[str],
-    schemas: dict[str, list[bigquery.SchemaField]],
-    staging_table_ids: dict[str, str],
+    schemas: Mapping[str, list[bigquery.SchemaField]],
+    staging_table_ids: Mapping[str, str],
 ) -> None:
     for table_name in table_names:
         _create_or_replace_empty_table(
@@ -97,85 +96,35 @@ def _prepare_staging_tables(
         )
 
 
-def _load_batch_to_staging(
-    bq_client: bigquery.Client,
-    table_rows: dict[str, Sequence[BigQueryRow]],
-    table_names: Sequence[str],
-    schemas: dict[str, list[bigquery.SchemaField]],
-    staging_table_ids: dict[str, str],
-    loaded_rows: dict[str, int],
-) -> None:
-    for table_name in table_names:
-        rows = table_rows.get(table_name, [])
-        validate_rows_for_table(table_name, schemas, rows)
-
-        loaded_rows[table_name] += _load_rows_to_table_id(
-            bq_client=bq_client,
-            table_id=staging_table_ids[table_name],
-            rows=rows,
-            schema=schemas[table_name],
-            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
-        )
-
-
-def _publish_staging_tables(
-    bq_client: bigquery.Client,
-    config: ProjectConfig,
-    table_names: Sequence[str],
-    staging_table_ids: dict[str, str],
-) -> None:
-    for table_name in table_names:
-        _publish_staging_to_target(
-            bq_client=bq_client,
-            target_table_id=_build_target_table_id(config, table_name),
-            staging_table_id=staging_table_ids[table_name],
-        )
-
-
 def _cleanup_staging_tables(
     bq_client: bigquery.Client,
-    staging_table_ids: dict[str, str],
+    staging_table_ids: Mapping[str, str],
 ) -> None:
     for table_id in staging_table_ids.values():
         _delete_table_if_exists(bq_client=bq_client, table_id=table_id)
 
 
-def _update_global_progress(
-    progress_artifact_id: UUID | None,
-    completed_steps: int,
-    total_steps: int,
-) -> None:
-    if progress_artifact_id is None or total_steps is None or total_steps <= 0:
-        return
-    update_progress_artifact(
-        artifact_id=progress_artifact_id,
-        progress=(completed_steps / total_steps) * 100,
-    )
-
-
-def _iter_table_rows_batches(
-    table_rows: dict[str, Sequence[BigQueryRow]],
-    batch_size: int,
-) -> Iterator[dict[str, Sequence[BigQueryRow]]]:
-    if batch_size <= 0:
-        raise ValueError("batch_size must be a positive integer")
-
-    max_length = max((len(rows) for rows in table_rows.values()), default=0)
-    for start in range(0, max_length, batch_size):
-        yield {
-            table_name: rows[start : start + batch_size]
-            for table_name, rows in table_rows.items()
-        }
+def _iter_chunked_rows(
+    rows_iter: Iterable[BigQueryRow],
+    chunk_size: int,
+) -> Iterator[list[BigQueryRow]]:
+    chunk: list[BigQueryRow] = []
+    for row in rows_iter:
+        chunk.append(row)
+        if len(chunk) >= chunk_size:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk
 
 
 def load_all_tables_by_batches(
     *,
-    table_batches: Iterable[dict[str, Sequence[BigQueryRow]]],
-    schemas: dict[str, list[bigquery.SchemaField]],
+    table_batches: Mapping[str, Iterable[BigQueryRow]],
+    schemas: Mapping[str, list[bigquery.SchemaField]],
     config: ProjectConfig,
     run_id: str | None = None,
-    nb_batches: int,
-) -> dict[str, int]:
+) -> Mapping[str, int]:
     logger = get_run_logger()
     logger.info("connecting to big query...")
     bq_client = _create_bq_client(config)
@@ -192,18 +141,8 @@ def load_all_tables_by_batches(
         for table_name in table_names
     }
     loaded_rows: dict[str, int] = {table_name: 0 for table_name in table_names}
-    nb_steps = nb_batches + len(schemas) + 1
-
-    progress_artifact_id = cast(
-        UUID,
-        create_progress_artifact(
-            progress=0.0,
-            description="Idempotent staged loading to BigQuery",
-        ),
-    )
 
     logger.info("Preparing %d staging tables", len(table_names))
-
     _prepare_staging_tables(
         bq_client=bq_client,
         table_names=table_names,
@@ -213,44 +152,40 @@ def load_all_tables_by_batches(
     logger.info("Staging tables prepared")
 
     try:
-        completed_steps = 0
-        batch_count = 0
-        for table_rows in table_batches:
-            batch_count += 1
-            _load_batch_to_staging(
-                bq_client=bq_client,
-                table_rows=table_rows,
-                table_names=table_names,
-                schemas=schemas,
-                staging_table_ids=staging_table_ids,
-                loaded_rows=loaded_rows,
-            )
-            completed_steps += 1
-            _update_global_progress(
-                progress_artifact_id=progress_artifact_id,
-                completed_steps=completed_steps,
-                total_steps=nb_steps,
-            )
+        chunk_size = 40_000
+        for table_name in table_names:
+            table_iter = table_batches.get(table_name)
+            if table_iter is None:
+                raise ValueError(f"Missing table iterable for '{table_name}'")
 
-            logger.info(
-                "Loaded staging batch %d%s",
-                batch_count,
-                f"/{nb_batches}" if nb_batches else "",
-            )
+            table_batch_count = 0
+            for table_batch_count, batch_rows in enumerate(
+                _iter_chunked_rows(table_iter, chunk_size=chunk_size),
+                start=1,
+            ):
+                validate_rows_for_table(table_name, schemas, batch_rows)
+                loaded_rows[table_name] += _load_rows_to_table_id(
+                    bq_client=bq_client,
+                    table_id=staging_table_ids[table_name],
+                    rows=batch_rows,
+                    schema=schemas[table_name],
+                    write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+                )
+
+                logger.info(
+                    "Loaded staging batch %d for table %s",
+                    table_batch_count,
+                    table_name,
+                )
 
         logger.info("Publishing staging tables to target tables")
-        _publish_staging_tables(
-            bq_client=bq_client,
-            config=config,
-            table_names=table_names,
-            staging_table_ids=staging_table_ids,
-        )
-        completed_steps += 1
-        _update_global_progress(
-            progress_artifact_id=progress_artifact_id,
-            completed_steps=completed_steps,
-            total_steps=nb_steps,
-        )
+        for table_name in table_names:
+            _publish_staging_to_target(
+                bq_client=bq_client,
+                target_table_id=_build_target_table_id(config, table_name),
+                staging_table_id=staging_table_ids[table_name],
+            )
+
         logger.info("Published %d tables to target", len(table_names))
     finally:
         logger.info("Cleaning up staging tables")
@@ -258,28 +193,18 @@ def load_all_tables_by_batches(
             bq_client=bq_client,
             staging_table_ids=staging_table_ids,
         )
-        completed_steps += 1
-        _update_global_progress(
-            progress_artifact_id=progress_artifact_id,
-            completed_steps=completed_steps,
-            total_steps=nb_steps,
-        )
 
     return loaded_rows
 
 
 def load_all_tables(
     *,
-    table_rows: dict[str, Sequence[BigQueryRow]],
-    schemas: dict[str, list[bigquery.SchemaField]],
+    table_rows: Mapping[str, Iterable[BigQueryRow]],
+    schemas: Mapping[str, list[bigquery.SchemaField]],
     config: ProjectConfig,
-    batch_size: int = 40_000,
-) -> dict[str, int]:
-    table_batches = _iter_table_rows_batches(table_rows, batch_size=batch_size)
-    nb_batches = sum(len(rows) for rows in table_rows.values()) // batch_size + 1
+) -> Mapping[str, int]:
     return load_all_tables_by_batches(
-        table_batches=table_batches,
+        table_batches=table_rows,
         schemas=schemas,
         config=config,
-        nb_batches=nb_batches,
     )

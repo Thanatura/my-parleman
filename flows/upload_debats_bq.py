@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from datetime import timedelta
 from typing import Sequence
 
@@ -43,7 +44,7 @@ def parse_debat_contents(debat_contents: list[str]) -> DebatParseResult:
 
 @task(cache_policy=NO_CACHE)
 def upload_to_bigquery(parsed_debats: DebatParseResult, config: ProjectConfig) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    table_payloads: Mapping[str, Sequence[BigQueryRow]] = {
         "comptes_rendus": parsed_debats.comptes_rendus,
         "points_seance": parsed_debats.points,
         "interventions": parsed_debats.interventions,

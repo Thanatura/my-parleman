@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Sequence
 
 from prefect.artifacts import create_table_artifact
@@ -78,7 +79,7 @@ def load_to_bigquery(
     deports: list[DeportRow],
     config: ProjectConfig,
 ) -> None:
-    table_rows: dict[str, Sequence[BigQueryRow]] = {
+    table_rows: Mapping[str, Sequence[BigQueryRow]] = {
         "acteurs": acteurs,
         "adresses": adresses,
         "mandats": mandats,

@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Sequence
 
 from prefect import flow, get_run_logger, task
@@ -31,7 +32,7 @@ def parse_scrutins_table(zip_bytes: bytes) -> ScrutinParseResult:
 def load_to_bigquery(
     scrutins_result: ScrutinParseResult, config: ProjectConfig
 ) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    table_payloads: Mapping[str, Sequence[BigQueryRow]] = {
         "scrutins": scrutins_result.scrutins,
         "scrutin_groupes_votes": scrutins_result.groupes_votes,
         "scrutin_votes_individuels": scrutins_result.votes_individuels,

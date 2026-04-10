@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Sequence
 
 from prefect import flow, get_run_logger, task
@@ -31,7 +32,7 @@ def parse_questions_ecrites_table(zip_bytes: bytes) -> QuestionEcriteParseResult
 def load_to_bigquery(
     questions_ecrites_result: QuestionEcriteParseResult, config: ProjectConfig
 ) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    table_payloads: Mapping[str, Sequence[BigQueryRow]] = {
         "questions_ecrites": questions_ecrites_result.questions,
         "questions_ecrites_min_attribs": questions_ecrites_result.min_attribs,
         "questions_ecrites_renouvellements": questions_ecrites_result.renouvellements,
