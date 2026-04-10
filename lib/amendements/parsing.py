@@ -24,48 +24,38 @@ def _as_list(value: Any) -> list[Any]:
     return [value]
 
 
-def _parse_single_amendement(
-    dossier_id: str,
-    file_content: str,
-) -> tuple[
-    AmendementRow | None,
-    list[AmendementSignataireRow],
-    list[AmendementsCosignataireRow],
-]:
+def _get_dict(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    return {}
+
+
+def _load_amendement_wrapper(file_content: str) -> dict[str, Any] | None:
     try:
         payload = json.loads(file_content)
     except json.JSONDecodeError:
-        return None, [], []
+        return None
 
     amendement_wrapper = (payload or {}).get("amendement")
     if not isinstance(amendement_wrapper, dict):
-        return None, [], []
+        return None
 
     uid = to_str(amendement_wrapper.get("uid"))
     if not uid:
-        return None, [], []
+        return None
 
-    # Extract identification
-    identification = amendement_wrapper.get("identification") or {}
+    return amendement_wrapper
 
-    # Extract pointeur fragment texte (text targeting)
-    pointeur = amendement_wrapper.get("pointeurFragmentTexte") or {}
-    division = pointeur.get("division") or {}
 
-    # Extract corps (body)
-    corps = amendement_wrapper.get("corps") or {}
-    contenu_auteur = corps.get("contenuAuteur") or {}
-
-    # Extract cycle de vie (lifecycle)
-    cycle_vie = amendement_wrapper.get("cycleDeVie") or {}
-    etat_elem = cycle_vie.get("etatDesTraitements", {})
-    etat = etat_elem.get("etat") or {}
-    sous_etat = etat_elem.get("sousEtat") or {}
-
-    # Extract signataires (authors/signatories)
-    sig_container = amendement_wrapper.get("signataires") or {}
-
-    # Parse main author
+def _parse_auteur(
+    uid: str,
+    sig_container: dict[str, Any],
+) -> tuple[
+    str | None,
+    str | None,
+    str | None,
+    list[AmendementSignataireRow],
+]:
     auteur_elem = sig_container.get("auteur")
     auteur_type = None
     auteur_acteur_ref = None
@@ -77,7 +67,6 @@ def _parse_single_amendement(
         auteur_acteur_ref = to_str(auteur_elem.get("acteurRef"))
         auteur_groupe_ref = to_str(auteur_elem.get("groupePolitiqueRef"))
 
-        # Add author to signataires table
         if auteur_acteur_ref:
             signataires.append(
                 AmendementSignataireRow(
@@ -89,9 +78,16 @@ def _parse_single_amendement(
                 )
             )
 
-    # Parse co-signers
+    return auteur_type, auteur_acteur_ref, auteur_groupe_ref, signataires
+
+
+def _parse_cosignataires(
+    uid: str,
+    sig_container: dict[str, Any],
+) -> list[AmendementsCosignataireRow]:
     cosignataires: list[AmendementsCosignataireRow] = []
     cosig_container = sig_container.get("cosignataires")
+
     if isinstance(cosig_container, dict):
         cosig_refs = _as_list(cosig_container.get("acteurRef"))
 
@@ -106,7 +102,26 @@ def _parse_single_amendement(
                     )
                 )
 
-    amendement = AmendementRow(
+    return cosignataires
+
+
+def _build_amendement_row(
+    uid: str,
+    dossier_id: str,
+    amendement_wrapper: dict[str, Any],
+    identification: dict[str, Any],
+    division: dict[str, Any],
+    contenu_auteur: dict[str, Any],
+    cycle_vie: dict[str, Any],
+    auteur_type: str | None,
+    auteur_acteur_ref: str | None,
+    auteur_groupe_ref: str | None,
+) -> AmendementRow:
+    etat_elem = _get_dict(cycle_vie.get("etatDesTraitements"))
+    etat = _get_dict(etat_elem.get("etat"))
+    sous_etat = _get_dict(etat_elem.get("sousEtat"))
+
+    return AmendementRow(
         uid=uid,
         legislature=to_str(amendement_wrapper.get("legislature")),
         numero_long=to_str(identification.get("numeroLong")),
@@ -130,6 +145,47 @@ def _parse_single_amendement(
         auteur_type=auteur_type,
         auteur_acteur_ref=auteur_acteur_ref,
         auteur_groupe_politique_ref=auteur_groupe_ref,
+    )
+
+
+def _parse_single_amendement(
+    dossier_id: str,
+    file_content: str,
+) -> tuple[
+    AmendementRow | None,
+    list[AmendementSignataireRow],
+    list[AmendementsCosignataireRow],
+]:
+    amendement_wrapper = _load_amendement_wrapper(file_content)
+    if amendement_wrapper is None:
+        return None, [], []
+
+    uid = to_str(amendement_wrapper.get("uid")) or ""
+    identification = _get_dict(amendement_wrapper.get("identification"))
+    pointeur = _get_dict(amendement_wrapper.get("pointeurFragmentTexte"))
+    division = _get_dict(pointeur.get("division"))
+    corps = _get_dict(amendement_wrapper.get("corps"))
+    contenu_auteur = _get_dict(corps.get("contenuAuteur"))
+    cycle_vie = _get_dict(amendement_wrapper.get("cycleDeVie"))
+    sig_container = _get_dict(amendement_wrapper.get("signataires"))
+
+    auteur_type, auteur_acteur_ref, auteur_groupe_ref, signataires = _parse_auteur(
+        uid=uid,
+        sig_container=sig_container,
+    )
+    cosignataires = _parse_cosignataires(uid=uid, sig_container=sig_container)
+
+    amendement = _build_amendement_row(
+        uid=uid,
+        dossier_id=dossier_id,
+        amendement_wrapper=amendement_wrapper,
+        identification=identification,
+        division=division,
+        contenu_auteur=contenu_auteur,
+        cycle_vie=cycle_vie,
+        auteur_type=auteur_type,
+        auteur_acteur_ref=auteur_acteur_ref,
+        auteur_groupe_ref=auteur_groupe_ref,
     )
 
     return amendement, signataires, cosignataires
