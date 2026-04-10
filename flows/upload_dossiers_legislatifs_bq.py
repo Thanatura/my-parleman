@@ -1,10 +1,11 @@
+from collections.abc import Mapping
 from typing import Sequence
 
 from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 from prefect.tasks import task_input_hash
 
-from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils import load_all_tables
 from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
 from lib.dossiers_legislatifs import (
@@ -38,7 +39,7 @@ def parse_dossiers_table(zip_bytes: bytes) -> DossiersParseResult:
 def load_to_bigquery(
     dossiers_result: DossiersParseResult, config: ProjectConfig
 ) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    table_payloads: Mapping[str, Sequence[BigQueryRow]] = {
         "documents": dossiers_result.documents,
         "dossiers_parlementaires": dossiers_result.dossiers_parlementaires,
         "dossier_actes_legislatifs": dossiers_result.dossier_actes_legislatifs,

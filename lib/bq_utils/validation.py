@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from google.cloud import bigquery
 from lib.config import ProjectConfig
 from lib.bq_utils.models import BigQueryRow
@@ -16,7 +16,7 @@ class ValidationError(ValueError):
 
 def validate_rows_for_table(
     table_name: str,
-    schema: dict[str, list[bigquery.SchemaField]],
+    schema: Mapping[str, list[bigquery.SchemaField]],
     rows: Sequence[BigQueryRow],
 ) -> None:
     schema_fields = schema[table_name]
