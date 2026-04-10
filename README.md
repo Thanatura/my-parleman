@@ -191,7 +191,7 @@ Store environment variables in Prefect:
 ```bash
 make setup_prefect_variables
 ```
-Store sensitive service account JSON variable:
+Store sensitive service account JSON and github token variables (names «github-token» and «gcp-service-account-info»):
 
 ```bash
 prefect block create secret
