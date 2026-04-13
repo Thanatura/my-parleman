@@ -20,6 +20,7 @@ sources:
       - name: documents
       - name: dossiers_parlementaires
       - name: dossier_actes_legislatifs
+      - name: amendements
 
 models:
   - name: stg_deputes
@@ -61,6 +62,9 @@ models:
   - name: stg_dossier_actes_legislatifs
     description: Staging model for dossier legislative acts.
 
+  - name: stg_amendements
+    description: Staging model for amendements data.
+
   - name: int_depute_mandats
     description: Intermediate model linking deputes and mandats.
 
@@ -79,6 +83,17 @@ models:
   - name: int_scrutin_groupes_enriched
     description: Intermediate enriched model for scrutin group votes.
 
+  - name: int_dossier_actes
+    description: Intermediate model for timeline and act counts per dossier.
+
+  - name: int_dossier_documents
+    description: Intermediate model for document counts per dossier.
+
+  - name: int_dossier_scrutins
+    description: Intermediate model for vote statistics per dossier.
+
+  - name: int_dossier_amendements
+    description: Intermediate model for amendment statistics per dossier.
   - name: int_depute_dans_partis
     description: Intermediate model linking deputes to their partis and groupes.
 
@@ -112,5 +127,10 @@ models:
   - name: mart_circonscription_activity
     description: One row per circonscription with deputes and interventions aggregates.
 
+  - name: mart_dossiers_enriched
+    description: Enriched mart providing 360 view of legislative dossiers.
+
+  - name: mart_dossiers_votes_groupes
+    description: Mart aggregating vote counts by political group per dossier.
   - name: mart_depute_place_hemicycle
     description: Mart for mapping deputes to their place in the hemicycle.

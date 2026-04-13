@@ -9,5 +9,6 @@ select
   organe_ref,
   date_acte,
   type_acte,
-  texte_associe
+  texte_associe,
+  vote_ref
 from {{ source('raw_parleman', 'dossier_actes_legislatifs') }}
