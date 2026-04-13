@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Sequence
 
 from prefect.artifacts import create_table_artifact
@@ -13,7 +14,7 @@ from lib.depute.parsing import (
     parse_mandats,
     parse_organes,
 )
-from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils import load_all_tables
 from prefect import flow, get_run_logger, task
 from prefect.tasks import task_input_hash
 
@@ -78,7 +79,7 @@ def load_to_bigquery(
     deports: list[DeportRow],
     config: ProjectConfig,
 ) -> None:
-    table_rows: dict[str, Sequence[BigQueryRow]] = {
+    table_rows: Mapping[str, Sequence[BigQueryRow]] = {
         "acteurs": acteurs,
         "adresses": adresses,
         "mandats": mandats,
@@ -105,7 +106,7 @@ def load_to_bigquery(
 
 
 @flow(name="an-deputes-pipeline", log_prints=True)
-def an_deputes_pipeline() -> None:
+def an_deputes_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.deputes_url)
     acteurs = parse_acteurs_table(zip_bytes)
@@ -117,4 +118,4 @@ def an_deputes_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    an_deputes_pipeline()
+    an_deputes_flow()

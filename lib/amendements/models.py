@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from collections.abc import Iterator
 
 from lib.bq_utils.models import BigQueryRow
 
@@ -63,6 +64,6 @@ class AmendementsCosignataireRow(BigQueryRow):
 
 @dataclass
 class AmendementParseResult:
-    amendements: list[AmendementRow]
-    signataires: list[AmendementSignataireRow]
-    cosignataires: list[AmendementsCosignataireRow]
+    amendements: Iterator[AmendementRow]
+    signataires: Iterator[AmendementSignataireRow]
+    cosignataires: Iterator[AmendementsCosignataireRow]

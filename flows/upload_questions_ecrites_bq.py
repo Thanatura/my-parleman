@@ -1,10 +1,11 @@
+from collections.abc import Mapping
 from typing import Sequence
 
 from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 from prefect.tasks import task_input_hash
 
-from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils import load_all_tables
 from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
 from lib.extract import fetch_zip_file
@@ -31,7 +32,7 @@ def parse_questions_ecrites_table(zip_bytes: bytes) -> QuestionEcriteParseResult
 def load_to_bigquery(
     questions_ecrites_result: QuestionEcriteParseResult, config: ProjectConfig
 ) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    table_payloads: Mapping[str, Sequence[BigQueryRow]] = {
         "questions_ecrites": questions_ecrites_result.questions,
         "questions_ecrites_min_attribs": questions_ecrites_result.min_attribs,
         "questions_ecrites_renouvellements": questions_ecrites_result.renouvellements,
@@ -57,7 +58,7 @@ def load_to_bigquery(
 
 
 @flow
-def questions_ecrites_pipeline() -> None:
+def questions_ecrites_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.questions_ecrites_url)
     questions_ecrites_result = parse_questions_ecrites_table(zip_bytes)
@@ -65,4 +66,4 @@ def questions_ecrites_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    questions_ecrites_pipeline()
+    questions_ecrites_flow()

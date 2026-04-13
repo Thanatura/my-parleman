@@ -2,6 +2,21 @@
 
 Pipeline for fetching/parsing French National Assembly data, with BigQuery loading and Metabase visualization.
 
+## Project Structure
+
+```text
+config/           # Configuration templates
+flows/            # Prefect pipeline orchestration
+infra/            # Docker Compose stack
+lib/              # Core modules (parsing, loading, validation)
+scripts/          # Utility scripts and SQL views
+tests/            # Unit tests
+.env              # Environment variables (do not commit with real values)
+.env.example      # Template for .env
+pyproject.toml    # Project metadata and dependencies
+README.md         # This file
+```
+
 ## Installation
 
 1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
@@ -50,36 +65,63 @@ Edit `.env` to override defaults:
 
 ## GCP Setup
 
-1. Create service account:
+1. Create service accounts:
 
+For runner (runs flow code):
 ```bash
-export GCP_PROJECT_ID="parleman-491810"
-export SA_NAME="parleman-bq-runner"
+export GCP_PROJECT="parleman-491810"
+export SA_RUNNER_NAME="parleman-bq-runner"
 
-gcloud iam service-accounts create "$SA_NAME" \
-  --project "$GCP_PROJECT_ID" \
+gcloud iam service-accounts create "$SA_RUNNER_NAME" \
+  --project "$GCP_PROJECT" \
   --display-name "ParlemAN BigQuery Runner"
+```
+
+For worker (invokes jobs on Cloud Run):
+```bash
+export SA_WORKER_NAME="parleman-prefect-worker"
+
+gcloud iam service-accounts create "$SA_WORKER_NAME" \
+  --project "$GCP_PROJECT" \
+  --display-name "ParlemAN Prefect Worker"
 ```
 
 2. Grant minimal roles:
 
+For runner:
 ```bash
-gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
-  --member "serviceAccount:${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding "$GCP_PROJECT" \
+  --member "serviceAccount:${SA_RUNNER_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com" \
   --role "roles/bigquery.jobUser"
 
-gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
-  --member "serviceAccount:${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding "$GCP_PROJECT" \
+  --member "serviceAccount:${SA_RUNNER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --role "roles/bigquery.dataEditor"
 ```
+
+For worker:
+```bash
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_WORKER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/run.invoker"
+
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_WORKER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/artifactregistry.reader"
+
+gcloud projects add-iam-policy-binding "$GCP_PROJECT_ID" \
+  --member "serviceAccount:${SA_WORKER_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  --role "roles/iam.serviceAccountUser"
+```
+
 
 3. Create local key:
 
 ```bash
 mkdir -p .secrets
 gcloud iam service-accounts keys create .secrets/parleman-sa.json \
-  --iam-account "${SA_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
-  --project "$GCP_PROJECT_ID"
+  --iam-account "${SA_RUNNER_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com" \
+  --project "$GCP_PROJECT"
 ```
 
 4. Set environment variable in `.env`:
@@ -144,20 +186,58 @@ docker compose down
 docker run -p 4200:4200 -d --rm prefecthq/prefect:3-latest -- prefect server start --host 0.0.0.0
 ```
 
-## Project Structure
+## Prefect Deployment (Cloud Run)
 
-```text
-config/           # Configuration templates
-flows/            # Prefect pipeline orchestration
-infra/            # Docker Compose stack
-lib/              # Core modules (parsing, loading, validation)
-scripts/          # Utility scripts and SQL views
-tests/            # Unit tests
-.env              # Environment variables (do not commit with real values)
-.env.example      # Template for .env
-pyproject.toml    # Project metadata and dependencies
-README.md         # This file
+### Prerequisites
+
+- GCP project configured (`parleman-491810`)
+- `gcloud` CLI authenticated
+- Prefect Cloud account
+
+### 1. Setup GCP Region
+
+```bash
+gcloud config set run/region my-region
 ```
+
+### 2. Create Prefect Variables
+
+Store environment variables in Prefect:
+
+```bash
+make setup_prefect_variables
+```
+Store sensitive service account JSON and github token variables (names «github-token» and «gcp-service-account-info»):
+
+```bash
+prefect block create secret
+```
+
+### 3. Deploy Prefect Worker
+
+Deploy a Prefect worker to Cloud Run:
+
+```bash
+gcloud run deploy prefect-worker \
+  --image=europe-west1-docker.pkg.dev/${GCP_PROJECT}/parleman-artifact-repo/prefect-worker \
+  --set-env-vars PREFECT_API_URL=${PREFECT_API_URL} \
+  --service-account ${SA_WORKER_NAME}@${GCP_PROJECT}.iam.gserviceaccount.com \
+  --no-cpu-throttling \
+  --min-instances 1 \
+  --memory=2Gi \
+  --startup-probe httpGet.port=8080,httpGet.path=/health,initialDelaySeconds=100,periodSeconds=20,timeoutSeconds=20 \
+  --args "prefect","worker","start","--install-policy","never","--with-healthcheck","-p","parleman-work-pool","-t","cloud-run"
+```
+
+### 4. Deploy Flows
+
+```bash
+prefect deploy
+```
+
+This reads configuration from `prefect.yaml` and deploys flows to your work pool.
+
+
 ### Using the starter dbt parlemAn project
 
 Try running the following commands:

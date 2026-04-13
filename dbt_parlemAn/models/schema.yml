@@ -94,6 +94,14 @@ models:
 
   - name: int_dossier_amendements
     description: Intermediate model for amendment statistics per dossier.
+  - name: int_depute_dans_partis
+    description: Intermediate model linking deputes to their partis and groupes.
+
+  - name: int_liste_siege
+    description: Intermediate model for mapping deputes to their place in the hemicycle.
+  
+  - name: int_mandats_actifs
+    description: Intermediate model for active mandats and their circonscriptions.
 
   - name: mart_groupes_co_vote
     description: Mart for co-voting patterns between groupes.
@@ -124,3 +132,5 @@ models:
 
   - name: mart_dossiers_votes_groupes
     description: Mart aggregating vote counts by political group per dossier.
+  - name: mart_depute_place_hemicycle
+    description: Mart for mapping deputes to their place in the hemicycle.

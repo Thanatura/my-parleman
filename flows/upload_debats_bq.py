@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from datetime import timedelta
 from typing import Sequence
 
@@ -6,7 +7,7 @@ from prefect.artifacts import create_table_artifact
 
 from prefect.cache_policies import INPUTS, NO_CACHE
 from prefect.tasks import task_input_hash
-from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils import load_all_tables
 from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
 from lib.debat import DebatParseResult, parse_debats_files
@@ -43,7 +44,7 @@ def parse_debat_contents(debat_contents: list[str]) -> DebatParseResult:
 
 @task(cache_policy=NO_CACHE)
 def upload_to_bigquery(parsed_debats: DebatParseResult, config: ProjectConfig) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    table_payloads: Mapping[str, Sequence[BigQueryRow]] = {
         "comptes_rendus": parsed_debats.comptes_rendus,
         "points_seance": parsed_debats.points,
         "interventions": parsed_debats.interventions,

@@ -1,10 +1,11 @@
+from collections.abc import Mapping
 from typing import Sequence
 
 from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 from prefect.tasks import task_input_hash
 
-from lib.bq_utils.bq_utils import load_all_tables
+from lib.bq_utils import load_all_tables
 from lib.bq_utils.models import BigQueryRow
 from lib.config import ProjectConfig, get_config
 from lib.extract import fetch_zip_file
@@ -31,7 +32,7 @@ def parse_scrutins_table(zip_bytes: bytes) -> ScrutinParseResult:
 def load_to_bigquery(
     scrutins_result: ScrutinParseResult, config: ProjectConfig
 ) -> None:
-    table_payloads: dict[str, Sequence[BigQueryRow]] = {
+    table_payloads: Mapping[str, Sequence[BigQueryRow]] = {
         "scrutins": scrutins_result.scrutins,
         "scrutin_groupes_votes": scrutins_result.groupes_votes,
         "scrutin_votes_individuels": scrutins_result.votes_individuels,
@@ -57,7 +58,7 @@ def load_to_bigquery(
 
 
 @flow
-def scrutin_pipeline() -> None:
+def scrutin_flow() -> None:
     config = get_config()
     zip_bytes = fetch_zip(config.scrutins_url)
     scrutins_result = parse_scrutins_table(zip_bytes)
@@ -65,4 +66,4 @@ def scrutin_pipeline() -> None:
 
 
 if __name__ == "__main__":
-    scrutin_pipeline()
+    scrutin_flow()
