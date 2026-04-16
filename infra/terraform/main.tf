@@ -1,0 +1,153 @@
+resource "google_project_service" "services" {
+  for_each = local.project_services
+
+  project           = var.project_id
+  service           = each.value
+  disable_on_destroy = false
+}
+
+resource "google_service_account" "runner" {
+  account_id   = var.runner_service_account_id
+  display_name = "ParlemAN BigQuery Runner"
+  project      = var.project_id
+}
+
+resource "google_service_account" "worker" {
+  account_id   = var.worker_service_account_id
+  display_name = "ParlemAN Prefect Worker"
+  project      = var.project_id
+}
+
+resource "google_bigquery_dataset" "parleman" {
+  dataset_id                 = var.bq_dataset_id
+  description                = "Core analytical dataset for ParlemAN."
+  delete_contents_on_destroy = false
+  friendly_name              = "ParlemAN"
+  location                   = var.bq_location
+  project                    = var.project_id
+  labels                     = local.labels
+}
+
+resource "google_bigquery_dataset_access" "runner_writer" {
+  dataset_id    = google_bigquery_dataset.parleman.dataset_id
+  project       = var.project_id
+  role          = "WRITER"
+  user_by_email = google_service_account.runner.email
+}
+
+resource "google_project_iam_member" "runner_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.runner.email}"
+}
+
+resource "google_project_iam_member" "worker_artifact_registry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
+resource "google_project_iam_member" "worker_run_invoker" {
+  project = var.project_id
+  role    = "roles/run.invoker"
+  member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
+resource "google_project_iam_member" "worker_service_account_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
+resource "google_cloud_run_v2_service" "prefect_worker" {
+  depends_on = [
+    google_project_service.services,
+    google_service_account.worker,
+  ]
+
+  deletion_protection = false
+  location            = var.region
+  name                = var.cloud_run_service_name
+  project             = var.project_id
+  labels              = local.labels
+
+  template {
+    service_account = google_service_account.worker.email
+
+    scaling {
+      min_instance_count = 1
+    }
+
+    containers {
+      image  = local.worker_image
+      command = ["prefect", "worker", "start", "--install-policy", "never", "--with-healthcheck", "-p", "parleman-work-pool", "-t", "cloud-run"]
+
+      dynamic "env" {
+        for_each = local.worker_env
+
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "4Gi"
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_run_v2_service" "prefect_server" {
+  depends_on = [google_project_service.services]
+
+  deletion_protection = false
+  location            = var.region
+  name                = var.prefect_server_service_name
+  project             = var.project_id
+  labels              = local.labels
+
+  template {
+    scaling {
+      min_instance_count = var.prefect_server_min_instances
+    }
+
+    containers {
+      image = local.server_image
+
+      env {
+        name = "PREFECT_SERVER_PORT"
+        value = tostring(var.prefect_server_port)
+      }
+
+      env {
+        name = "GCP_PROJECT"
+        value = var.project_id
+      }
+
+      ports {
+        container_port = var.prefect_server_port
+      }
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "2Gi"
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_run_service_iam_member" "prefect_server_public_invoker" {
+  count = var.prefect_server_allow_unauthenticated ? 1 : 0
+
+  location = google_cloud_run_v2_service.prefect_server.location
+  project  = var.project_id
+  service  = google_cloud_run_v2_service.prefect_server.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}

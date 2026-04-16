@@ -1,0 +1,5 @@
+project_id  = "data-curriculum-488313"
+location    = "EU"
+bucket_name = "my-parleman-tf-state"
+artifact_registry_location = "europe-west1"
+artifact_registry_repository_id = "parleman-artifact-repo"

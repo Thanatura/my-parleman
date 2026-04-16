@@ -1,18 +1,26 @@
 build_metabase: ## Build image for GCP (Linux/amd64 platform)
 	@echo "Building the image for GCP..."
 	docker pull --platform linux/amd64 metabase/metabase:v0.56.3
-	docker tag metabase/metabase:v0.56.3 europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/${METABASE_IMAGE}
+	docker tag metabase/metabase:v0.56.3 europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/metabase
 
 push_metabase: build_metabase ## Build and push image to Artifact Registry
-	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/${METABASE_IMAGE}
+	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/metabase
 
 
 build_prefect_worker: ## Build image for GCP (Linux/amd64 platform)
 	@echo "Building the image for GCP..."
-	docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-worker -f infra/prefect/Dockerfile . 
+	docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-worker -f infra/prefect/worker.Dockerfile . 
 
 push_prefect_worker: build_prefect_worker ## Build and push image to Artifact Registry
 	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-worker
+
+
+build_prefect_server: ## Build image for GCP (Linux/amd64 platform)
+	@echo "Building the image for GCP..."
+	docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-server -f infra/prefect/server.Dockerfile . 
+
+push_prefect_server: build_prefect_server ## Build and push image to Artifact Registry
+	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-server
 
 deploy_prefect_worker:
 	gcloud run deploy prefect-worker \
@@ -33,7 +41,6 @@ setup_prefect_variables:
 
 	# Docker et images
 	prefect variable set docker-registry ${DOCKER_REGISTRY}
-	prefect variable set metabase-image ${METABASE_IMAGE}
 
 	# API et infrastructure
 	prefect variable set prefect-api-url ${PREFECT_API_URL}
