@@ -48,6 +48,12 @@ variable "worker_service_account_id" {
   default     = "parleman-prefect-worker"
 }
 
+variable "server_service_account_id" {
+  description = "Service account that runs the Cloud Run Prefect server."
+  type        = string
+  default     = "parleman-prefect-server"
+}
+
 variable "cloud_run_service_name" {
   description = "Cloud Run service name for the Prefect worker."
   type        = string
@@ -102,6 +108,25 @@ variable "prefect_server_allow_unauthenticated" {
   default     = true
 }
 
+variable "prefect_server_api_auth_string" {
+  description = "Prefect server API auth string in the form username:password. Required when public unauthenticated access is enabled."
+  type        = string
+  default     = null
+  nullable    = true
+  sensitive   = true
+
+  validation {
+    condition = (
+      !var.prefect_server_allow_unauthenticated ||
+      (
+        var.prefect_server_api_auth_string != null &&
+        can(regex("^[^:]+:.+$", var.prefect_server_api_auth_string))
+      )
+    )
+    error_message = "When prefect_server_allow_unauthenticated is true, prefect_server_api_auth_string must be set as username:password."
+  }
+}
+
 variable "vm_db_zone" {
   description = "GCP zone used for the PostgreSQL VM."
   type        = string
@@ -124,6 +149,24 @@ variable "prefect_db_name" {
   description = "PostgreSQL database name used by Prefect server."
   type        = string
   default     = "prefect"
+}
+
+variable "vm_db_postgres_source_ranges" {
+  description = "CIDR ranges allowed to connect to PostgreSQL (port 5432). Restrict this in production."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "vm_db_enable_ssh" {
+  description = "Whether to create an SSH firewall rule (port 22) for the DB VM."
+  type        = bool
+  default     = false
+}
+
+variable "vm_db_ssh_source_ranges" {
+  description = "CIDR ranges allowed for SSH access to the DB VM when vm_db_enable_ssh is true."
+  type        = list(string)
+  default     = []
 }
 
 variable "cloud_run_env_vars" {

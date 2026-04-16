@@ -25,20 +25,28 @@ push_prefect_server: build_prefect_server ## Build and push image to Artifact Re
 setup_prefect_variables:
 	@set -euo pipefail; \
 	TF_DIR="infra/terraform"; \
-	PREFECT_SERVER_URL="$$(terraform -chdir="$$TF_DIR" output -raw prefect_server_url)"; \
 	ARTIFACT_REPO="$$(terraform -chdir="$$TF_DIR" output -raw artifact_registry_repository)"; \
-	PREFECT_API_URL="$${PREFECT_SERVER_URL%/}/api"; \
+	RAW_PREFECT_API_URL="$${PREFECT_API_URL:-}"; \
+	if [ -z "$$RAW_PREFECT_API_URL" ]; then \
+		echo "PREFECT_API_URL is required"; \
+		exit 1; \
+	fi; \
+	BASE_PREFECT_URL="$$(printf '%s' "$$RAW_PREFECT_API_URL" | sed -E 's#/*$$##; s#/dashboard/api$$##; s#/dashboard$$##; s#/api$$##')"; \
+	EFFECTIVE_PREFECT_API_URL="$$BASE_PREFECT_URL/api"; \
 	DOCKER_REGISTRY="$$ARTIFACT_REPO"; \
-	prefect variable set prefect-api-url "$$PREFECT_API_URL"; \
-	prefect variable set docker-registry "$$DOCKER_REGISTRY"; \
-	prefect variable set gcp-project "$$GCP_PROJECT"; \
-	prefect variable set bq-dataset "$$BQ_DATASET"; \
-	prefect variable set debat-url "$$DEBAT_URL"; \
-	prefect variable set deputes-url "$$DEPUTES_URL"; \
-	prefect variable set scrutins-url "$$SCRUTINS_URL"; \
-	prefect variable set dossiers-legislatifs-url "$$DOSSIERS_LEGISLATIFS_URL"; \
-	prefect variable set amendements-url "$$AMENDEMENTS_URL"; \
-	prefect variable set questions-ecrites-url "$$QUESTIONS_ECRITES_URL"
+	export PREFECT_API_URL="$$EFFECTIVE_PREFECT_API_URL"; \
+	export PREFECT_API_AUTH_STRING="$${PREFECT_API_AUTH_STRING:-}"; \
+	echo "Using PREFECT_API_URL=$$EFFECTIVE_PREFECT_API_URL"; \
+	uv run prefect variable set prefect-api-url "$$EFFECTIVE_PREFECT_API_URL"; \
+	uv run prefect variable set docker-registry "$$DOCKER_REGISTRY"; \
+	uv run prefect variable set gcp-project "$$GCP_PROJECT"; \
+	uv run prefect variable set bq-dataset "$$BQ_DATASET"; \
+	uv run prefect variable set debat-url "$$DEBAT_URL"; \
+	uv run prefect variable set deputes-url "$$DEPUTES_URL"; \
+	uv run prefect variable set scrutins-url "$$SCRUTINS_URL"; \
+	uv run prefect variable set dossiers-legislatifs-url "$$DOSSIERS_LEGISLATIFS_URL"; \
+	uv run prefect variable set amendements-url "$$AMENDEMENTS_URL"; \
+	uv run prefect variable set questions-ecrites-url "$$QUESTIONS_ECRITES_URL"
 
 setup_prefect_secret_blocks:
 	@set -euo pipefail; \
@@ -46,3 +54,19 @@ setup_prefect_secret_blocks:
 	RUNNER_SA_KEY_JSON="$$(terraform -chdir="$$TF_DIR" output -raw runner_service_account_key_json)"; \
 	RUNNER_SA_KEY_JSON="$$RUNNER_SA_KEY_JSON" uv run python -c 'import os; from prefect.blocks.system import Secret; Secret(value=os.environ["RUNNER_SA_KEY_JSON"]).save("gcp-service-account-info", overwrite=True)'; \
 	echo "Updated Prefect Secret block: gcp-service-account-info"
+
+run_all_flows:
+	@set -euo pipefail; \
+	set -a; . ./.env; set +a; \
+	for d in \
+		an-deputes-pipeline/deputes \
+		debat-flow/debats \
+		scrutin-flow/scrutins \
+		dossiers-legislatifs-flow/dossiers_legislatifs \
+		amendements-flow/amendements \
+		questions-ecrites-flow/questions_ecrites; do \
+		echo "Triggering deployment: $$d"; \
+		uv run prefect deployment run "$$d" & \
+	done; \
+	wait; \
+	echo "All non-dbt deployments have been triggered"

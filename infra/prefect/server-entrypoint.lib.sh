@@ -1,22 +1,5 @@
 #!/bin/bash
 
-resolve_prefect_api_url() {
-  if [ -n "${PREFECT_API_URL:-}" ]; then
-    return 0
-  fi
-
-  TOKEN=$(curl -sf -H "Metadata-Flavor: Google" \
-    http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token \
-    | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
-
-  SERVICE_URL=$(curl -sf \
-    -H "Authorization: Bearer ${TOKEN}" \
-    "https://run.googleapis.com/v2/projects/${GCP_PROJECT}/locations/europe-west1/services/${K_SERVICE}" \
-    | python3 -c "import sys,json; print(json.load(sys.stdin)['urls'][0])")
-
-  export PREFECT_API_URL="${SERVICE_URL}/api"
-}
-
 wait_for_database() {
   DB_WAIT_TIMEOUT_SECONDS="${DB_WAIT_TIMEOUT_SECONDS:-300}"
   DB_WAIT_INTERVAL_SECONDS="${DB_WAIT_INTERVAL_SECONDS:-3}"

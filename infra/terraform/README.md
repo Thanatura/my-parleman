@@ -13,6 +13,20 @@ This directory contains the main infrastructure stack for ParlemAN.
 - Cloud Run Prefect worker service,
 - Cloud Run Prefect server service.
 
+Security defaults in this stack:
+
+- Prefect server is public by default but protected by an auth string (`prefect_server_allow_unauthenticated = true`, `prefect_server_api_auth_string`),
+- Cloud Run Prefect server runs with a dedicated service account,
+- SSH firewall rule on DB VM is disabled by default (`vm_db_enable_ssh = false`),
+- PostgreSQL firewall defaults to an open allow-list unless you tighten `vm_db_postgres_source_ranges`.
+
+To expose Prefect server publicly while keeping API access protected, set:
+
+- `prefect_server_allow_unauthenticated = true`
+- `prefect_server_api_auth_string = "<username>:<password>"`
+
+Then configure clients/workers with `PREFECT_API_AUTH_STRING`.
+
 Image references are built from variables:
 
 - worker image: `<region>-docker.pkg.dev/<project>/<repo>/<worker_image>:<tag>`
@@ -65,7 +79,9 @@ The worker `PREFECT_API_URL` is computed automatically as:
 
 via Terraform local value `prefect_api_url`.
 
-The server gets `PREFECT_SERVER_DATABASE_CONNECTION_URL` from `module.vm_db.connection_string`.
+The server gets `PREFECT_API_DATABASE_CONNECTION_URL` from `module.vm_db.connection_string`.
+
+If you want to tighten PostgreSQL access, override `vm_db_postgres_source_ranges` with the CIDRs you want to allow.
 
 ## Apply Main Stack
 
@@ -90,10 +106,15 @@ Defined in `variables.tf`:
 - `cloud_run_server_image_name`
 - `cloud_run_server_image_tag`
 - `prefect_server_allow_unauthenticated`
+- `prefect_server_api_auth_string` (sensitive)
+- `server_service_account_id`
 - `vm_db_zone`
 - `prefect_db_user`
 - `prefect_db_password` (sensitive)
 - `prefect_db_name`
+- `vm_db_postgres_source_ranges`
+- `vm_db_enable_ssh`
+- `vm_db_ssh_source_ranges`
 - `cloud_run_env_vars` (extra env vars merged into worker env)
 
 ## Outputs

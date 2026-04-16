@@ -4,16 +4,16 @@ set -euxo pipefail
 apt-get update -y
 apt-get install -y postgresql postgresql-contrib
 
-# Demarrer et activer PostgreSQL
+# Start and enable PostgreSQL
 systemctl start postgresql
 systemctl enable postgresql
 
-# Creer un utilisateur et une base de donnees avant de durcir l'authentification
+# Create user and database before hardening authentication
 sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE USER ${prefect_db_user} WITH PASSWORD '${prefect_db_password}'" || true
 sudo -u postgres psql -v ON_ERROR_STOP=1 -c "ALTER USER ${prefect_db_user} WITH PASSWORD '${prefect_db_password}'"
 sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE DATABASE ${prefect_db_name} OWNER ${prefect_db_user}" || true
 
-# Configurer l'ecoute sur toutes les interfaces et forcer l'authentification par mot de passe
+# Listen on all interfaces and enforce password authentication
 PG_VERSION=$(ls /etc/postgresql/)
 PG_CONF="/etc/postgresql/$PG_VERSION/main/postgresql.conf"
 HBA_CONF="/etc/postgresql/$PG_VERSION/main/pg_hba.conf"
@@ -29,7 +29,7 @@ grep -q "^host[[:space:]]\+all[[:space:]]\+all[[:space:]]\+127.0.0.1\/32[[:space
 grep -q "^host[[:space:]]\+all[[:space:]]\+all[[:space:]]\+::1\/128[[:space:]]\+scram-sha-256" "$HBA_CONF" || \
   echo "host    all             all             ::1/128                 scram-sha-256" >> "$HBA_CONF"
 
-# Autoriser les connexions externes avec mot de passe
+# Allow external connections with password authentication
 grep -q "^host[[:space:]]\+all[[:space:]]\+all[[:space:]]\+0.0.0.0/0[[:space:]]\+scram-sha-256" "$HBA_CONF" || \
   echo "host    all             all             0.0.0.0/0               scram-sha-256" >> "$HBA_CONF"
 

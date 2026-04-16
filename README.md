@@ -41,6 +41,8 @@ Variables minimales à renseigner dans `.env` :
 
 - `GCP_PROJECT`
 - `BQ_DATASET`
+- `PREFECT_DB_PASSWORD`
+- `PREFECT_API_AUTH_STRING`
 - `DEBAT_URL`
 - `DEPUTES_URL`
 - `SCRUTINS_URL`
@@ -50,7 +52,18 @@ Variables minimales à renseigner dans `.env` :
 
 Notes:
 - `TF_VAR_project_id` et `TF_VAR_bq_dataset_id` peuvent référencer `GCP_PROJECT` et `BQ_DATASET`.
+- `TF_VAR_prefect_db_password` doit être aligné avec `PREFECT_DB_PASSWORD`.
+- `TF_VAR_prefect_server_api_auth_string` doit être aligné avec `PREFECT_API_AUTH_STRING`.
 - `SERVICE_ACCOUNT_INFO` est nécessaire pour des runs locaux de flows, mais pas pour le chemin Cloud Run + Prefect (le secret Prefect est alimenté via Terraform output et `make setup_prefect_secret_blocks`).
+
+Exemple `.env` minimal pour la partie sécurité Prefect :
+
+```bash
+PREFECT_DB_PASSWORD="<mot_de_passe_fort>"
+PREFECT_API_AUTH_STRING="admin:${PREFECT_DB_PASSWORD}"
+TF_VAR_prefect_db_password="${PREFECT_DB_PASSWORD}"
+TF_VAR_prefect_server_api_auth_string="${PREFECT_API_AUTH_STRING}"
+```
 
 ## Structure du repo
 
@@ -97,6 +110,59 @@ Cette stack provisionne notamment :
 - Cloud Run Prefect server,
 - Cloud Run Prefect worker.
 
+#### changements de sécurité récents
+
+- le service `prefect_server` est public par défaut mais protégé par une clé (`prefect_server_allow_unauthenticated = true`, `prefect_server_api_auth_string`),
+- le serveur Prefect utilise un service account dédié (`server_service_account_id`),
+- la VM PostgreSQL n'ouvre pas SSH par défaut (`vm_db_enable_ssh = false`),
+- le firewall PostgreSQL peut rester ouvert par défaut ou être restreint via `vm_db_postgres_source_ranges`.
+
+Option d'exposition publique avec clé :
+
+- définir `prefect_server_allow_unauthenticated = true`,
+- définir `prefect_server_api_auth_string = "<username>:<password>"`,
+- fournir `PREFECT_API_AUTH_STRING` aux clients et au worker.
+
+Pour vérifier les ranges effectivement autorisés côté DB :
+
+```bash
+terraform -chdir=infra/terraform output vm_db_postgres_source_ranges
+```
+
+#### Accès à prefect server (privé)
+
+Le serveur étant public mais protégé, l'accès recommandé se fait directement ou via proxy authentifié :
+
+```bash
+gcloud run services proxy prefect-server --region europe-west1 --port 8088
+```
+
+Puis ouvrir :
+
+```text
+http://127.0.0.1:8088/dashboard
+```
+
+Vérifier l'API proxifiée :
+
+```bash
+curl -sS http://127.0.0.1:8088/api/health
+```
+
+Mettre à jour PREFECT_API_URL :
+
+```bash
+export PREFECT_API_URL="http://127.0.0.1:8088/api"
+echo "PREFECT_API_URL=${PREFECT_API_URL}" >> .env
+```
+
+Si le serveur est en mode public + clé, exporter aussi :
+
+```bash
+export PREFECT_API_AUTH_STRING="<username>:<password>"
+echo "PREFECT_API_AUTH_STRING=${PREFECT_API_AUTH_STRING}" >> .env
+```
+
 ### 4) Initialisation des variables et secrets Prefect
 
 Depuis la racine:
@@ -106,11 +172,16 @@ make setup_prefect_variables
 make setup_prefect_secret_blocks
 ```
 
+Important:
+- `make setup_prefect_secret_blocks` doit être rejoué après recréation/migration du serveur Prefect.
+- Si ce step est omis, `prefect deploy --all` peut échouer avec `Block document not found` sur `prefect.blocks.secret.gcp-service-account-info`.
+
 ### 5) Déployer les flows
 
 ```bash
 prefect deploy --all
 ```
+
 
 ## Pour vérifier que tout fonctionne
 
@@ -152,6 +223,8 @@ uv run python -m flows.run_dbt_build
 - `make push_prefect_server`
 - `make setup_prefect_variables`
 - `make setup_prefect_secret_blocks`
+- `make run_all_flows` (déclenche tous les flows d'ingestion hors `dbt_build` en parallèle)
+- `make run_all_flows_serial` (idem, en séquentiel)
 - `make push_metabase`
 
 ## metabase local (optionnel)
@@ -178,3 +251,4 @@ docker compose down
 - Ne pas committer de `.env` réel.
 - Ne pas committer de clés de service account.
 - Limiter les permissions IAM au strict nécessaire.
+- Si `prefect_server` est exposé publiquement, exiger `PREFECT_SERVER_API_AUTH_STRING` côté serveur et `PREFECT_API_AUTH_STRING` côté clients/workers.

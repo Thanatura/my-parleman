@@ -27,6 +27,9 @@ locals {
       BQ_DATASET  = var.bq_dataset_id
       PREFECT_API_URL = local.prefect_api_url
     },
+    var.prefect_server_api_auth_string == null ? {} : {
+      PREFECT_API_AUTH_STRING = var.prefect_server_api_auth_string
+    },
     var.cloud_run_env_vars,
   )
 }

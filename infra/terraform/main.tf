@@ -23,6 +23,12 @@ resource "google_service_account" "worker" {
   project      = var.project_id
 }
 
+resource "google_service_account" "server" {
+  account_id   = var.server_service_account_id
+  display_name = "ParlemAN Prefect Server"
+  project      = var.project_id
+}
+
 resource "google_bigquery_dataset" "parleman" {
   dataset_id                 = var.bq_dataset_id
   description                = "Core analytical dataset for ParlemAN."
@@ -70,6 +76,12 @@ resource "google_project_iam_member" "worker_service_account_user" {
   member  = "serviceAccount:${google_service_account.worker.email}"
 }
 
+resource "google_project_iam_member" "server_run_viewer" {
+  project = var.project_id
+  role    = "roles/run.viewer"
+  member  = "serviceAccount:${google_service_account.server.email}"
+}
+
 module "vm_db" {
   source = "./vm_db"
 
@@ -79,6 +91,9 @@ module "vm_db" {
   prefect_db_user     = var.prefect_db_user
   prefect_db_password = var.prefect_db_password
   prefect_db_name     = var.prefect_db_name
+  postgres_source_ranges = var.vm_db_postgres_source_ranges
+  enable_ssh          = var.vm_db_enable_ssh
+  ssh_source_ranges   = var.vm_db_ssh_source_ranges
 }
 
 resource "google_cloud_run_v2_service" "prefect_worker" {
@@ -124,7 +139,11 @@ resource "google_cloud_run_v2_service" "prefect_worker" {
 }
 
 resource "google_cloud_run_v2_service" "prefect_server" {
-  depends_on = [google_project_service.services]
+  depends_on = [
+    google_project_service.services,
+    google_service_account.server,
+    google_project_iam_member.server_run_viewer,
+  ]
 
   deletion_protection = false
   location            = var.region
@@ -133,12 +152,25 @@ resource "google_cloud_run_v2_service" "prefect_server" {
   labels              = local.labels
 
   template {
+    service_account = google_service_account.server.email
+
     scaling {
       min_instance_count = var.prefect_server_min_instances
     }
 
     containers {
       image = local.server_image
+
+      dynamic "env" {
+        for_each = var.prefect_server_api_auth_string == null ? {} : {
+          PREFECT_SERVER_API_AUTH_STRING = var.prefect_server_api_auth_string
+        }
+
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
 
       env {
         name = "PREFECT_SERVER_PORT"
@@ -148,6 +180,11 @@ resource "google_cloud_run_v2_service" "prefect_server" {
       env {
         name = "GCP_PROJECT"
         value = var.project_id
+      }
+
+      env {
+        name  = "PREFECT_UI_API_URL"
+        value = "/api"
       }
 
       env {

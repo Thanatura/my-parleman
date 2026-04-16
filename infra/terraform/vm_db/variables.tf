@@ -32,3 +32,21 @@ variable "prefect_db_name" {
   type        = string
   default     = "prefect"
 }
+
+variable "postgres_source_ranges" {
+  description = "CIDR autorisés vers PostgreSQL (port 5432)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "enable_ssh" {
+  description = "Activer la règle firewall SSH sur la VM"
+  type        = bool
+  default     = false
+}
+
+variable "ssh_source_ranges" {
+  description = "CIDR autorisés pour SSH quand enable_ssh=true"
+  type        = list(string)
+  default     = []
+}
