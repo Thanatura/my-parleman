@@ -20,7 +20,6 @@ x-prefect-common-unscheduled: &prefect-common-unscheduled
         BQ_DATASET: "{{ prefect.variables.bq-dataset }}"
         PREFECT_API_URL: "{{ prefect.variables.prefect-api-url }}"
         DOCKER_REGISTRY: "{{ prefect.variables.docker-registry }}"
-        METABASE_IMAGE: "{{ prefect.variables.metabase-image }}"
         DEBAT_URL: "{{ prefect.variables.debat-url }}"
         DEPUTES_URL: "{{ prefect.variables.deputes-url }}"
         SCRUTINS_URL: "{{ prefect.variables.scrutins-url }}"
@@ -50,13 +49,11 @@ prefect-version: 3.6.24
 # push section allows you to manage if and how this project
 # is uploaded to remote locations
 
-# pull section allows you to provide instructions for cloning
+# pull section allows you to provide instructions for preparing
 # this project in remote locations
 pull:
-- prefect.deployments.steps.git_clone:
-    repository: https://github.com/Thanatura/ParlemAN.git
-    branch: dev
-    access_token: "{{ prefect.blocks.secret.github-token }}"
+  - prefect.deployments.steps.set_working_directory:
+      directory: /app
 
 # the deployments section allows you to provide configuration
 # for deploying flows
