@@ -1,69 +1,46 @@
 # ParlemAN
 
-Data pipeline for the French National Assembly datasets:
-- extract and parse raw open data,
-- load curated tables into BigQuery,
-- run dbt transformations,
-- orchestrate everything with Prefect.
+Pipeline de données pour les jeux open data de l'Assemblée nationale :
+- extraction et parsing,
+- chargement dans BigQuery,
+- transformations dbt,
+- orchestration avec Prefect.
 
-## Repository Overview
+Ce README est orienté examinateur : il décrit le chemin minimal pour lancer le projet sur votre propre projet GCP.
 
-```text
-config/                  # Config templates (Metabase, settings)
-dbt_parlemAn/            # dbt project (staging/intermediate/marts)
-flows/                   # Prefect flows (ingestion + dbt build)
-infra/                   # Local infra (docker-compose) and Terraform
-lib/                     # Parsing + BigQuery loading logic
-tests/                   # Unit tests
-.env.example             # Required environment variables template
-prefect.yaml             # Prefect deployments configuration
-```
-
-## Prerequisites
+## Prérequis
 
 - Python 3.13
 - uv
-- Docker (for local Metabase and image builds)
-- gcloud CLI (for GCP deployments)
-- Terraform >= 1.8 (for infra provisioning)
+- Docker
+- gcloud CLI
+- Terraform >= 1.8
+- Prefect CLI (installé via les dépendances Python du projet)
 
-## Local Setup
-
-Install dependencies:
-
-```bash
-uv sync
-```
-
-Optional quality tooling:
+Préparer votre contexte GCP :
 
 ```bash
-uv run pre-commit install
+gcloud auth login
+gcloud config set project <VOTRE_PROJECT_ID>
+gcloud auth application-default login
 ```
 
-Create your local environment file:
+Important :
+- le projet GCP doit avoir la facturation active,
+- vous devez avoir les droits IAM suffisants pour créer IAM/Cloud Run/BigQuery/Artifact Registry.
+
+## Variables à renseigner
+
+Copier le template :
 
 ```bash
 cp .env.example .env
 ```
 
-`SERVICE_ACCOUNT_INFO` must contain a JSON object (single-line JSON) for a GCP service account key.
+Variables minimales à renseigner dans `.env` :
 
-Example:
-
-```bash
-export SERVICE_ACCOUNT_INFO="$(jq -c . /path/to/service-account.json)"
-```
-
-## Environment Variables
-
-Main variables used by flows and deployments:
-
-- `SERVICE_ACCOUNT_INFO`
 - `GCP_PROJECT`
 - `BQ_DATASET`
-- `PREFECT_API_URL`
-- `DOCKER_REGISTRY`
 - `DEBAT_URL`
 - `DEPUTES_URL`
 - `SCRUTINS_URL`
@@ -71,122 +48,133 @@ Main variables used by flows and deployments:
 - `DOSSIERS_LEGISLATIFS_URL`
 - `AMENDEMENTS_URL`
 
-Additional helper variables in `.env.example`:
+Notes:
+- `TF_VAR_project_id` et `TF_VAR_bq_dataset_id` peuvent référencer `GCP_PROJECT` et `BQ_DATASET`.
+- `SERVICE_ACCOUNT_INFO` est nécessaire pour des runs locaux de flows, mais pas pour le chemin Cloud Run + Prefect (le secret Prefect est alimenté via Terraform output et `make setup_prefect_secret_blocks`).
 
-- `SA_WORKER_NAME`
-- `SA_RUNNER_NAME`
-- `TF_VAR_project_id`
-- `TF_VAR_bq_dataset_id`
+## Structure du repo
 
-## Run Flows Locally
-
-You need to run a Prefect server locally or have access to a remote one, and set `PREFECT_API_URL` accordingly
-
-```bash
-uv run prefect server start
+```text
+config/                  # Config templates (Metabase, settings)
+dbt_parlemAn/            # Projet dbt
+flows/                   # Flows Prefect (ingestion + dbt)
+infra/                   # Docker compose local + Terraform
+lib/                     # Parsing + chargement BigQuery
+tests/                   # Tests unitaires
+.env.example             # Variables d'environnement
+prefect.yaml             # Deployments Prefect
 ```
 
-Run one ingestion flow directly:
+## Déploiement complet sur un projet gcp
+
+### 1) Bootstrap Terraform (state bucket + Artifact Registry)
 
 ```bash
-uv run python -m flows.upload_deputes_bq
+terraform -chdir=infra/terraform/bootstrap init
+terraform -chdir=infra/terraform/bootstrap apply
 ```
 
-Other entrypoints:
+### 2) Build et push des images runtime
 
-- `flows.upload_debats_bq`
-- `flows.upload_scrutins_bq`
-- `flows.upload_dossiers_legislatifs_bq`
-- `flows.upload_amendements_bq`
-- `flows.upload_questions_ecrites_bq`
-- `flows.run_dbt_build`
-
-## dbt
-
-`flows/run_dbt_build.py` runs `dbt build` against `dbt_parlemAn/` using a generated temporary `profiles.yml` from runtime env vars.
-
-If you want to run dbt manually:
-
-```bash
-uv run pip install dbt-bigquery
-cd dbt_parlemAn
-dbt build
-```
-
-## Prefect Deployments
-
-Deployments are defined in `prefect.yaml` and target the `parleman-work-pool` work pool.
-
-Before deploying:
-
-1. Ensure required Prefect variables exist (from your shell env):
-
-```bash
-make setup_prefect_variables
-```
-
-2. Create/update Prefect secret block `gcp-service-account-info`.
-
-3. Build and push runtime images:
+Depuis la racine :
 
 ```bash
 make push_prefect_worker
 make push_prefect_server
 ```
 
-Deploy all flows:
+### 3) Provisionnement stack principale
 
 ```bash
-prefect deploy
+terraform -chdir=infra/terraform init 
+terraform -chdir=infra/terraform apply
 ```
 
-## Terraform Infrastructure
-
-Terraform files are in `infra/terraform`.
-
-The Terraform stack provisions:
+Cette stack provisionne notamment :
 - BigQuery dataset,
-- service accounts and IAM bindings,
-- Cloud Run Prefect worker,
+- service accounts + IAM,
+- VM PostgreSQL pour metadata Prefect,
 - Cloud Run Prefect server,
-- required APIs.
+- Cloud Run Prefect worker.
 
-Read `infra/terraform/README.md` for bootstrap + apply steps.
+### 4) Initialisation des variables et secrets Prefect
 
-## Metabase (Local)
+Depuis la racine:
 
-Prepare config:
+```bash
+make setup_prefect_variables
+make setup_prefect_secret_blocks
+```
+
+### 5) Déployer les flows
+
+```bash
+prefect deploy --all
+```
+
+## Pour vérifier que tout fonctionne
+
+1. Dans Prefect UI, les deployments sont visibles (deputes, debats, scrutins, dossiers_legislatifs, amendements, questions_ecrites, dbt_build).
+2. Un run manuel d'au moins un flow d'ingestion se termine en succès.
+3. Le run `dbt_build` se termine en succès.
+4. Les tables cibles existent dans le dataset BigQuery configuré.
+
+## Exécution locale
+
+Installer les dépendances :
+
+```bash
+uv sync
+```
+
+Lancer les tests:
+
+```bash
+uv run pytest
+```
+
+Lancer un flow localement:
+
+```bash
+uv run python -m flows.upload_deputes_bq
+```
+
+Lancer le flow dbt localement:
+
+```bash
+uv pip install dbt-bigquery
+uv run python -m flows.run_dbt_build
+```
+
+## commandes make disponibles
+
+- `make push_prefect_worker`
+- `make push_prefect_server`
+- `make setup_prefect_variables`
+- `make setup_prefect_secret_blocks`
+- `make push_metabase`
+
+## metabase local (optionnel)
 
 ```bash
 cp config/metabase.env.example config/metabase.env
-```
-
-Start:
-
-```bash
 cd infra
 docker compose up -d
 ```
 
-Access:
+Accès :
 - Metabase: http://localhost:3000
 - Adminer: http://localhost:8080
 
-Stop:
+Arrêt :
 
 ```bash
 cd infra
 docker compose down
 ```
 
-## Tests
+## sécurité
 
-```bash
-uv run pytest
-```
-
-## Security Notes
-
-- Do not commit real `.env` files.
-- Do not commit service account keys.
-- Keep IAM permissions minimal.
+- Ne pas committer de `.env` réel.
+- Ne pas committer de clés de service account.
+- Limiter les permissions IAM au strict nécessaire.

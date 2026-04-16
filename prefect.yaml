@@ -10,7 +10,7 @@ x-prefect-common-unscheduled: &prefect-common-unscheduled
     name: parleman-work-pool
     work_queue_name: null
     job_variables:
-      image: europe-west1-docker.pkg.dev/parleman-491810/parleman-artifact-repo/prefect-worker:latest
+      image: europe-west1-docker.pkg.dev/{{ prefect.variables.gcp-project }}/{{ prefect.variables.docker-registry }}/prefect-worker:latest
       region: europe-west1
       cpu: "1000m"
       memory: "4Gi"
