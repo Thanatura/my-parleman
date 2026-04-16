@@ -9,6 +9,7 @@ This directory contains the main infrastructure stack for ParlemAN.
 - service account for BigQuery loading (`parleman-bq-runner` by default),
 - service account for Cloud Run worker (`parleman-prefect-worker` by default),
 - IAM bindings for runner and worker,
+- PostgreSQL VM module for Prefect metadata database (`vm_db`),
 - Cloud Run Prefect worker service,
 - Cloud Run Prefect server service.
 
@@ -64,6 +65,8 @@ The worker `PREFECT_API_URL` is computed automatically as:
 
 via Terraform local value `prefect_api_url`.
 
+The server gets `PREFECT_SERVER_DATABASE_CONNECTION_URL` from `module.vm_db.connection_string`.
+
 ## Apply Main Stack
 
 ```bash
@@ -87,6 +90,10 @@ Defined in `variables.tf`:
 - `cloud_run_server_image_name`
 - `cloud_run_server_image_tag`
 - `prefect_server_allow_unauthenticated`
+- `vm_db_zone`
+- `prefect_db_user`
+- `prefect_db_password` (sensitive)
+- `prefect_db_name`
 - `cloud_run_env_vars` (extra env vars merged into worker env)
 
 ## Outputs
@@ -100,3 +107,5 @@ Main outputs from `outputs.tf`:
 - `runner_service_account_email`
 - `worker_service_account_email`
 - `worker_image`
+- `prefect_db_public_ip`
+- `prefect_server_database_connection_url` (sensitive)

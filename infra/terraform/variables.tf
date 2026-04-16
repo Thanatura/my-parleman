@@ -102,6 +102,30 @@ variable "prefect_server_allow_unauthenticated" {
   default     = true
 }
 
+variable "vm_db_zone" {
+  description = "GCP zone used for the PostgreSQL VM."
+  type        = string
+  default     = "europe-west1-b"
+}
+
+variable "prefect_db_user" {
+  description = "PostgreSQL user for Prefect server database."
+  type        = string
+  default     = "prefect"
+}
+
+variable "prefect_db_password" {
+  description = "PostgreSQL password for Prefect server database user."
+  type        = string
+  sensitive   = true
+}
+
+variable "prefect_db_name" {
+  description = "PostgreSQL database name used by Prefect server."
+  type        = string
+  default     = "prefect"
+}
+
 variable "cloud_run_env_vars" {
   description = "Additional environment variables for the Cloud Run worker."
   type        = map(string)

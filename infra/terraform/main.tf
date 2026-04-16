@@ -12,6 +12,11 @@ resource "google_service_account" "runner" {
   project      = var.project_id
 }
 
+resource "google_service_account_key" "runner" {
+  service_account_id = google_service_account.runner.name
+  private_key_type   = "TYPE_GOOGLE_CREDENTIALS_FILE"
+}
+
 resource "google_service_account" "worker" {
   account_id   = var.worker_service_account_id
   display_name = "ParlemAN Prefect Worker"
@@ -53,10 +58,27 @@ resource "google_project_iam_member" "worker_run_invoker" {
   member  = "serviceAccount:${google_service_account.worker.email}"
 }
 
+resource "google_project_iam_member" "worker_run_developer" {
+  project = var.project_id
+  role    = "roles/run.developer"
+  member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
 resource "google_project_iam_member" "worker_service_account_user" {
   project = var.project_id
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
+module "vm_db" {
+  source = "./vm_db"
+
+  project_id          = var.project_id
+  region              = var.region
+  zone                = var.vm_db_zone
+  prefect_db_user     = var.prefect_db_user
+  prefect_db_password = var.prefect_db_password
+  prefect_db_name     = var.prefect_db_name
 }
 
 resource "google_cloud_run_v2_service" "prefect_worker" {
@@ -126,6 +148,11 @@ resource "google_cloud_run_v2_service" "prefect_server" {
       env {
         name = "GCP_PROJECT"
         value = var.project_id
+      }
+
+      env {
+        name  = "PREFECT_API_DATABASE_CONNECTION_URL"
+        value = module.vm_db.connection_string
       }
 
       ports {

@@ -23,6 +23,17 @@ output "runner_service_account_email" {
   value       = google_service_account.runner.email
 }
 
+output "runner_service_account_key_name" {
+  description = "Resource name of the runner service account key."
+  value       = google_service_account_key.runner.name
+}
+
+output "runner_service_account_key_json" {
+  description = "Runner service account key JSON for external integrations."
+  value       = base64decode(google_service_account_key.runner.private_key)
+  sensitive   = true
+}
+
 output "worker_service_account_email" {
   description = "Cloud Run worker service account email."
   value       = google_service_account.worker.email
@@ -31,4 +42,15 @@ output "worker_service_account_email" {
 output "worker_image" {
   description = "Container image used by the Cloud Run worker."
   value       = local.worker_image
+}
+
+output "prefect_db_public_ip" {
+  description = "Public IP of the PostgreSQL VM used by Prefect server."
+  value       = module.vm_db.postgres_public_ip
+}
+
+output "prefect_server_database_connection_url" {
+  description = "Database connection URL injected into PREFECT_SERVER_DATABASE_CONNECTION_URL."
+  value       = module.vm_db.connection_string
+  sensitive   = true
 }

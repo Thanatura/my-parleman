@@ -8,6 +8,7 @@ locals {
   project_services = toset([
     "bigquery.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "compute.googleapis.com",
     "iam.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com",

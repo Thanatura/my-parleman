@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euxo pipefail
+
+apt-get update -y
+apt-get install -y postgresql postgresql-contrib
+
+# Demarrer et activer PostgreSQL
+systemctl start postgresql
+systemctl enable postgresql
+
+# Creer un utilisateur et une base de donnees avant de durcir l'authentification
+sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE USER ${prefect_db_user} WITH PASSWORD '${prefect_db_password}'" || true
+sudo -u postgres psql -v ON_ERROR_STOP=1 -c "ALTER USER ${prefect_db_user} WITH PASSWORD '${prefect_db_password}'"
+sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE DATABASE ${prefect_db_name} OWNER ${prefect_db_user}" || true
+
+# Configurer l'ecoute sur toutes les interfaces et forcer l'authentification par mot de passe
+PG_VERSION=$(ls /etc/postgresql/)
+PG_CONF="/etc/postgresql/$PG_VERSION/main/postgresql.conf"
+HBA_CONF="/etc/postgresql/$PG_VERSION/main/pg_hba.conf"
+
+grep -q "^listen_addresses = '\*'" "$PG_CONF" || echo "listen_addresses = '*'" >> "$PG_CONF"
+grep -q "^password_encryption = 'scram-sha-256'" "$PG_CONF" || echo "password_encryption = 'scram-sha-256'" >> "$PG_CONF"
+
+sed -i "s/^local[[:space:]]\+all[[:space:]]\+all[[:space:]]\+peer$/local all all scram-sha-256/" "$HBA_CONF"
+
+grep -q "^host[[:space:]]\+all[[:space:]]\+all[[:space:]]\+127.0.0.1\/32[[:space:]]\+scram-sha-256" "$HBA_CONF" || \
+  echo "host    all             all             127.0.0.1/32            scram-sha-256" >> "$HBA_CONF"
+
+grep -q "^host[[:space:]]\+all[[:space:]]\+all[[:space:]]\+::1\/128[[:space:]]\+scram-sha-256" "$HBA_CONF" || \
+  echo "host    all             all             ::1/128                 scram-sha-256" >> "$HBA_CONF"
+
+# Autoriser les connexions externes avec mot de passe
+grep -q "^host[[:space:]]\+all[[:space:]]\+all[[:space:]]\+0.0.0.0/0[[:space:]]\+scram-sha-256" "$HBA_CONF" || \
+  echo "host    all             all             0.0.0.0/0               scram-sha-256" >> "$HBA_CONF"
+
+systemctl restart postgresql
+pg_isready -h 127.0.0.1 -p 5432 -U ${prefect_db_user} -d ${prefect_db_name}
