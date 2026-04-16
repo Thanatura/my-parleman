@@ -15,9 +15,8 @@ COPY ./dbt_parlemAn ./dbt_parlemAn
 
 RUN uv sync --no-dev --no-cache --no-editable --frozen
 
-# Install dbtf CLI
-RUN curl -fsSL https://public.cdn.getdbt.com/fs/install/install.sh | sh -s -- --update
-RUN exec $SHELL
+# Install dbt in the project virtualenv so Prefect tasks can resolve `dbt`
+RUN uv pip install --python /app/.venv/bin/python --no-cache dbt-bigquery
 
 # Ensure the virtual environment's bin directory is in the PATH
 ENV PATH="/app/.venv/bin:$PATH" 
