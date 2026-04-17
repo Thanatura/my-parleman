@@ -1,12 +1,3 @@
-build_metabase: ## Build image for GCP (Linux/amd64 platform)
-	@echo "Building the image for GCP..."
-	docker pull --platform linux/amd64 metabase/metabase:v0.56.3
-	docker tag metabase/metabase:v0.56.3 europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/metabase
-
-push_metabase: build_metabase ## Build and push image to Artifact Registry
-	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/metabase
-
-
 build_prefect_worker: ## Build image for GCP (Linux/amd64 platform)
 	@echo "Building the image for GCP..."
 	docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-worker -f infra/prefect/worker.Dockerfile . 
@@ -21,6 +12,20 @@ build_prefect_server: ## Build image for GCP (Linux/amd64 platform)
 
 push_prefect_server: build_prefect_server ## Build and push image to Artifact Registry
 	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-server
+
+build_backend: ## Build backend image for GCP (Linux/amd64 platform)
+	@echo "Building the backend image for GCP..."
+	docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/parleman-backend -f infra/app/backend.Dockerfile . 
+
+push_backend: build_backend ## Build and push backend image to Artifact Registry
+	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/parleman-backend
+
+build_frontend: ## Build frontend image for GCP (Linux/amd64 platform)
+	@echo "Building the frontend image for GCP..."
+	docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/parleman-frontend -f infra/app/frontend.Dockerfile . 
+
+push_frontend: build_frontend ## Build and push frontend image to Artifact Registry
+	docker push europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/parleman-frontend
 
 setup_prefect_variables:
 	@set -euo pipefail; \

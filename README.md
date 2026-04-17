@@ -68,7 +68,7 @@ TF_VAR_prefect_server_api_auth_string="${PREFECT_API_AUTH_STRING}"
 ## Structure du repo
 
 ```text
-config/                  # Config templates (Metabase, settings)
+config/                  # Config templates (settings)
 dbt_parlemAn/            # Projet dbt
 flows/                   # Flows Prefect (ingestion + dbt)
 infra/                   # Docker compose local + Terraform
@@ -227,7 +227,6 @@ uv run python -m flows.run_dbt_build
 - `make run_all_flows_serial` (idem, en séquentiel)
 - `make run_marts_api` (API FastAPI pour exposer les `mart_*` BigQuery)
 - `make run_marts_ui` (interface Streamlit connectée à l'API)
-- `make push_metabase`
 
 ## App marts BigQuery (FastAPI + Streamlit)
 
@@ -246,25 +245,6 @@ Dans un second terminal :
 
 ```bash
 make run_marts_ui
-```
-
-## metabase local (optionnel)
-
-```bash
-cp config/metabase.env.example config/metabase.env
-cd infra
-docker compose up -d
-```
-
-Accès :
-- Metabase: http://localhost:3000
-- Adminer: http://localhost:8080
-
-Arrêt :
-
-```bash
-cd infra
-docker compose down
 ```
 
 ## sécurité
