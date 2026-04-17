@@ -79,7 +79,7 @@ pyproject.toml           # Projet tooling racine (pre-commit)
 prefect.yaml             # Deployments Prefect
 ```
 
-## Déploiement complet sur un projet gcp
+## Déploiement complet sur un projet GCP
 
 ### 1) Bootstrap Terraform (state bucket + Artifact Registry)
 
@@ -93,8 +93,22 @@ terraform -chdir=infra/terraform/bootstrap apply
 Depuis la racine :
 
 ```bash
+make push_all_images
+```
+
+Cette commande pousse les 4 images nécessaires :
+- `prefect-worker`
+- `prefect-server`
+- `parleman-backend`
+- `parleman-frontend`
+
+Alternative (si besoin) :
+
+```bash
 make push_prefect_worker
 make push_prefect_server
+make push_backend
+make push_frontend
 ```
 
 ### 3) Provisionnement stack principale
@@ -130,9 +144,11 @@ Pour vérifier les ranges effectivement autorisés côté DB :
 terraform -chdir=infra/terraform output vm_db_postgres_source_ranges
 ```
 
-#### Accès à prefect server (privé)
+#### Accès au serveur Prefect
 
-Le serveur étant public mais protégé, l'accès recommandé se fait directement ou via proxy authentifié :
+Le service Cloud Run `prefect-server` est public, mais protégé par `PREFECT_SERVER_API_AUTH_STRING`.
+
+Pour un accès local pratique, utiliser un proxy :
 
 ```bash
 gcloud run services proxy prefect-server --region europe-west1 --port 8088
@@ -179,6 +195,12 @@ Important:
 ### 5) Déployer les flows
 
 ```bash
+make deploy_all_flows
+```
+
+Commande équivalente :
+
+```bash
 uv run --project ingest prefect deploy --all
 ```
 
@@ -210,7 +232,7 @@ uv run --project . pre-commit run --all-files
 Lancer les tests:
 
 ```bash
-uv run --project ingest pytest ingest/tests
+uv run --project ingest python -m pytest ingest/tests
 ```
 
 Lancer un flow localement:
@@ -230,7 +252,11 @@ uv run --project ingest python -m ingest.flows.run_dbt_build
 
 - `make push_prefect_worker`
 - `make push_prefect_server`
+- `make push_backend`
+- `make push_frontend`
+- `make push_all_images`
 - `make setup_prefect_variables`
+- `make deploy_all_flows`
 - `make setup_precommit` (installe pre-commit depuis le projet racine)
 - `make run_precommit` (lance tous les hooks pre-commit)
 - `make run_all_flows` (déclenche tous les flows d'ingestion hors `dbt_build` en parallèle)
