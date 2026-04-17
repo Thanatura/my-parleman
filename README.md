@@ -225,7 +225,28 @@ uv run python -m flows.run_dbt_build
 - `make setup_prefect_secret_blocks`
 - `make run_all_flows` (déclenche tous les flows d'ingestion hors `dbt_build` en parallèle)
 - `make run_all_flows_serial` (idem, en séquentiel)
+- `make run_marts_api` (API FastAPI pour exposer les `mart_*` BigQuery)
+- `make run_marts_ui` (interface Streamlit connectée à l'API)
 - `make push_metabase`
+
+## App marts BigQuery (FastAPI + Streamlit)
+
+L'app est dans le dossier `app/` :
+
+- backend FastAPI : `app/backend/main.py`
+- frontend Streamlit : `app/frontend/App.py`
+
+Lancement rapide :
+
+```bash
+make run_marts_api
+```
+
+Dans un second terminal :
+
+```bash
+make run_marts_ui
+```
 
 ## metabase local (optionnel)
 

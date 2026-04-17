@@ -70,3 +70,13 @@ run_all_flows:
 	done; \
 	wait; \
 	echo "All non-dbt deployments have been triggered"
+
+run_marts_api:
+	@set -euo pipefail; \
+	set -a; . ./.env; set +a; \
+	PYTHONPATH="$$(pwd):$$(pwd)/app" uv run uvicorn app.backend.main:app --reload --host 0.0.0.0 --port 8000
+
+run_marts_ui:
+	@set -euo pipefail; \
+	set -a; . ./.env; set +a; \
+	PYTHONPATH="$$(pwd):$$(pwd)/app" PARLEMAN_API_URL="$${PARLEMAN_API_URL:-http://127.0.0.1:8000}" uv run streamlit run app/frontend/App.py
