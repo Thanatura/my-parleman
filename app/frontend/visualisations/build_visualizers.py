@@ -17,12 +17,12 @@ from frontend.visualisations.types import Renderer
 
 def build_visualizers(api_base_url: str) -> dict[str, Renderer]:
     return {
+        "mart_groupes_co_vote": lambda frame: render_groupes_co_vote(
+            frame, api_base_url
+        ),
         "mart_depute_activity": render_depute_activity,
         "mart_groupe_activity": render_groupe_activity,
         "mart_commission_activity": render_commission_activity,
         "mart_interventions_time": render_interventions_time,
         "mart_dossiers_enriched": render_dossiers_enriched,
-        "mart_groupes_co_vote": lambda frame: render_groupes_co_vote(
-            frame, api_base_url
-        ),
     }

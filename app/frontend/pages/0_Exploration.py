@@ -132,7 +132,7 @@ if not marts:
 mart_names = [str(item["table_name"]) for item in marts]
 selected_mart = st.selectbox("Sélectionnez une table mart", options=mart_names)
 
-if st.button("Charger les données de la mart", type="primary"):
+if st.button("Charger les données du mart", type="primary"):
     try:
         data_payload, frame = load_mart_frame(api_base_url, selected_mart, limit)
     except Exception as exc:

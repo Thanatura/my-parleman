@@ -4,7 +4,7 @@ from __future__ import annotations
 import streamlit as st
 
 
-from frontend.shared import DEFAULT_API_URL, load_mart_frame, load_marts
+from frontend.shared import DEFAULT_API_URL, fetch_json, load_mart_frame, load_marts
 from frontend.visualisations import (
     build_visualizers,
     render_dedicated_visualisations,
@@ -18,6 +18,13 @@ api_base_url = DEFAULT_API_URL.rstrip("/")
 limit = 500
 
 visualizers = build_visualizers(api_base_url)
+
+try:
+    health = fetch_json(api_base_url=api_base_url, path="/health")
+    st.sidebar.success(f"Statut API : {health['status']}")
+except Exception as exc:
+    st.sidebar.error(f"API injoignable : {exc}")
+    st.stop()
 
 try:
     marts = load_marts(api_base_url)
