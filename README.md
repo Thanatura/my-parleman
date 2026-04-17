@@ -54,7 +54,7 @@ Notes:
 - `TF_VAR_project_id` et `TF_VAR_bq_dataset_id` peuvent référencer `GCP_PROJECT` et `BQ_DATASET`.
 - `TF_VAR_prefect_db_password` doit être aligné avec `PREFECT_DB_PASSWORD`.
 - `TF_VAR_prefect_server_api_auth_string` doit être aligné avec `PREFECT_API_AUTH_STRING`.
-- `SERVICE_ACCOUNT_INFO` est nécessaire pour des runs locaux de flows, mais pas pour le chemin Cloud Run + Prefect (le secret Prefect est alimenté via Terraform output et `make setup_prefect_secret_blocks`).
+- `SERVICE_ACCOUNT_INFO` est nécessaire pour des runs locaux de flows, mais pas pour le chemin Cloud Run + Prefect (le secret Prefect est alimenté via Terraform output et `make setup_prefect_variables`).
 
 Exemple `.env` minimal pour la partie sécurité Prefect :
 
@@ -70,10 +70,9 @@ TF_VAR_prefect_server_api_auth_string="${PREFECT_API_AUTH_STRING}"
 ```text
 config/                  # Config templates (settings)
 dbt_parlemAn/            # Projet dbt
-flows/                   # Flows Prefect (ingestion + dbt)
+ingest/                  # Code ingestion (flows Prefect + parsing + chargement BQ)
 infra/                   # Docker compose local + Terraform
-lib/                     # Parsing + chargement BigQuery
-tests/                   # Tests unitaires
+app/                     # API FastAPI + UI Streamlit
 .env.example             # Variables d'environnement
 prefect.yaml             # Deployments Prefect
 ```
@@ -169,17 +168,16 @@ Depuis la racine:
 
 ```bash
 make setup_prefect_variables
-make setup_prefect_secret_blocks
 ```
 
 Important:
-- `make setup_prefect_secret_blocks` doit être rejoué après recréation/migration du serveur Prefect.
+- `make setup_prefect_variables` doit être rejoué après recréation/migration du serveur Prefect.
 - Si ce step est omis, `prefect deploy --all` peut échouer avec `Block document not found` sur `prefect.blocks.secret.gcp-service-account-info`.
 
 ### 5) Déployer les flows
 
 ```bash
-prefect deploy --all
+uv run --project ingest prefect deploy --all
 ```
 
 
@@ -195,26 +193,26 @@ prefect deploy --all
 Installer les dépendances :
 
 ```bash
-uv sync
+uv sync --project ingest
 ```
 
 Lancer les tests:
 
 ```bash
-uv run pytest
+uv run --project ingest pytest ingest/tests
 ```
 
 Lancer un flow localement:
 
 ```bash
-uv run python -m flows.upload_deputes_bq
+uv run --project ingest python -m ingest.flows.upload_deputes_bq
 ```
 
 Lancer le flow dbt localement:
 
 ```bash
 uv pip install dbt-bigquery
-uv run python -m flows.run_dbt_build
+uv run --project ingest python -m ingest.flows.run_dbt_build
 ```
 
 ## commandes make disponibles
@@ -222,7 +220,6 @@ uv run python -m flows.run_dbt_build
 - `make push_prefect_worker`
 - `make push_prefect_server`
 - `make setup_prefect_variables`
-- `make setup_prefect_secret_blocks`
 - `make run_all_flows` (déclenche tous les flows d'ingestion hors `dbt_build` en parallèle)
 - `make run_all_flows_serial` (idem, en séquentiel)
 - `make run_marts_api` (API FastAPI pour exposer les `mart_*` BigQuery)
