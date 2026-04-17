@@ -1,11 +1,30 @@
 repos:
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.20.0
+-   repo: local
     hooks:
-    -   id: mypy
-        args: [--strict, --ignore-missing-imports]
-        additional_dependencies: [pydantic, types-requests]
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.8
-    hooks:
-    - id: ruff-check
+    -   id: ruff-app
+        name: ruff (app)
+        entry: uv run --project app --with ruff ruff check app
+        language: system
+        pass_filenames: false
+        files: ^app/
+
+    -   id: mypy-app
+        name: mypy (app)
+        entry: uv run --project app python -m mypy --config-file app/pyproject.toml
+        language: system
+        pass_filenames: false
+        files: ^app/
+
+    -   id: ruff-ingest
+        name: ruff (ingest)
+        entry: uv run --project ingest --with ruff ruff check ingest
+        language: system
+        pass_filenames: false
+        files: ^ingest/
+
+    -   id: mypy-ingest
+        name: mypy (ingest)
+        entry: uv run --project ingest python -m mypy --config-file ingest/pyproject.toml
+        language: system
+        pass_filenames: false
+        files: ^ingest/

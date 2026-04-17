@@ -30,6 +30,8 @@ package = false
 python_version = "3.13"
 disable_error_code = ["import-untyped"]
 explicit_package_bases = true
+files = ["app/backend", "app/frontend"]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["plotly", "plotly.*"]

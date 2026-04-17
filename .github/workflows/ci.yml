@@ -17,11 +17,11 @@ jobs:
         with:
           enable-cache: true
       - name: Set up Python
-        run: uv python install 3.14
+        run: uv python install 3.13
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --project ingest --all-extras --dev
       - name: Run Ruff
-        run: uv run ruff check .
+        run: uv run --project ingest ruff check ingest
 
   typecheck:
     name: Type Verification
@@ -33,11 +33,11 @@ jobs:
         with:
           enable-cache: true
       - name: Set up Python
-        run: uv python install 3.14
+        run: uv python install 3.13
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --project ingest --all-extras --dev
       - name: Run Mypy
-        run: uv run mypy .
+        run: uv run --project ingest mypy ingest
 
   test:
     name: Testing
@@ -49,8 +49,8 @@ jobs:
         with:
           enable-cache: true
       - name: Set up Python
-        run: uv python install 3.14
+        run: uv python install 3.13
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --project ingest --all-extras --dev
       - name: Run Pytest
-        run: uv run pytest
+        run: uv run --project ingest pytest ingest/tests

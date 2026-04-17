@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parleman"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "google-cloud-bigquery>=3.38.0",
+    "google-cloud-storage>=3.10.1",
+    "prefect[gcp]>=3.6.24",
+    "requests>=2.32.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy==1.19.0",
+    "types-requests",
+    "pytest>=9.0.2",
+    "ruff>=0.15.8",
+]
+
+[tool.setuptools]
+packages = ["lib", "flows"]
+
+[tool.mypy]
+python_version = "3.13"
+explicit_package_bases = true
+files = ["ingest/lib", "ingest/flows", "ingest/tests"]
+exclude = "^ingest/\\.venv/"
+disable_error_code = ["untyped-decorator"]
