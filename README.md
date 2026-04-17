@@ -148,38 +148,6 @@ terraform -chdir=infra/terraform output vm_db_postgres_source_ranges
 
 Le service Cloud Run `prefect-server` est public, mais protégé par `PREFECT_SERVER_API_AUTH_STRING`.
 
-Pour un accès local pratique, utiliser un proxy :
-
-```bash
-gcloud run services proxy prefect-server --region europe-west1 --port 8088
-```
-
-Puis ouvrir :
-
-```text
-http://127.0.0.1:8088/dashboard
-```
-
-Vérifier l'API proxifiée :
-
-```bash
-curl -sS http://127.0.0.1:8088/api/health
-```
-
-Mettre à jour PREFECT_API_URL :
-
-```bash
-export PREFECT_API_URL="http://127.0.0.1:8088/api"
-echo "PREFECT_API_URL=${PREFECT_API_URL}" >> .env
-```
-
-Si le serveur est en mode public + clé, exporter aussi :
-
-```bash
-export PREFECT_API_AUTH_STRING="<username>:<password>"
-echo "PREFECT_API_AUTH_STRING=${PREFECT_API_AUTH_STRING}" >> .env
-```
-
 ### 4) Initialisation des variables et secrets Prefect
 
 Depuis la racine:
