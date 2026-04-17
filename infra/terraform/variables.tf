@@ -102,6 +102,12 @@ variable "prefect_server_min_instances" {
   default     = 1
 }
 
+variable "prefect_server_max_instances" {
+  description = "Maximum number of running instances for the Prefect server."
+  type        = number
+  default     = 3
+}
+
 variable "prefect_server_allow_unauthenticated" {
   description = "Whether the Prefect server should be publicly invokable."
   type        = bool
@@ -169,8 +175,62 @@ variable "vm_db_ssh_source_ranges" {
   default     = []
 }
 
+variable "cloud_run_backend_image_name" {
+  description = "Container image name for the backend (FastAPI)."
+  type        = string
+  default     = "parleman-backend"
+}
+
+variable "cloud_run_backend_image_tag" {
+  description = "Container image tag for the backend."
+  type        = string
+  default     = "latest"
+}
+
+variable "cloud_run_backend_service_name" {
+  description = "Cloud Run service name for the backend."
+  type        = string
+  default     = "parleman-backend"
+}
+
+variable "backend_service_account_id" {
+  description = "Service account that runs the backend Cloud Run service."
+  type        = string
+  default     = "parleman-backend"
+}
+
+variable "cloud_run_frontend_image_name" {
+  description = "Container image name for the frontend (Streamlit)."
+  type        = string
+  default     = "parleman-frontend"
+}
+
+variable "cloud_run_frontend_image_tag" {
+  description = "Container image tag for the frontend."
+  type        = string
+  default     = "latest"
+}
+
+variable "cloud_run_frontend_service_name" {
+  description = "Cloud Run service name for the frontend."
+  type        = string
+  default     = "parleman-frontend"
+}
+
+variable "frontend_service_account_id" {
+  description = "Service account that runs the frontend Cloud Run service."
+  type        = string
+  default     = "parleman-frontend"
+}
+
 variable "cloud_run_env_vars" {
   description = "Additional environment variables for the Cloud Run worker."
   type        = map(string)
   default     = {}
+}
+
+variable "parleman_api_key" {
+  description = "API key for ParlemAN backend and frontend authentication."
+  type        = string
+  sensitive   = true
 }

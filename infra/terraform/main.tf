@@ -29,6 +29,18 @@ resource "google_service_account" "server" {
   project      = var.project_id
 }
 
+resource "google_service_account" "backend" {
+  account_id   = var.backend_service_account_id
+  display_name = "ParlemAN Backend (FastAPI)"
+  project      = var.project_id
+}
+
+resource "google_service_account" "frontend" {
+  account_id   = var.frontend_service_account_id
+  display_name = "ParlemAN Frontend (Streamlit)"
+  project      = var.project_id
+}
+
 resource "google_bigquery_dataset" "parleman" {
   dataset_id                 = var.bq_dataset_id
   description                = "Core analytical dataset for ParlemAN."
@@ -80,6 +92,30 @@ resource "google_project_iam_member" "server_run_viewer" {
   project = var.project_id
   role    = "roles/run.viewer"
   member  = "serviceAccount:${google_service_account.server.email}"
+}
+
+resource "google_project_iam_member" "backend_bigquery_reader" {
+  project = var.project_id
+  role    = "roles/bigquery.dataViewer"
+  member  = "serviceAccount:${google_service_account.backend.email}"
+}
+
+resource "google_project_iam_member" "backend_bigquery_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.backend.email}"
+}
+
+resource "google_project_iam_member" "backend_artifact_registry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.backend.email}"
+}
+
+resource "google_project_iam_member" "frontend_artifact_registry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.frontend.email}"
 }
 
 module "vm_db" {
@@ -156,6 +192,7 @@ resource "google_cloud_run_v2_service" "prefect_server" {
 
     scaling {
       min_instance_count = var.prefect_server_min_instances
+      max_instance_count = var.prefect_server_max_instances
     }
 
     containers {
@@ -212,6 +249,136 @@ resource "google_cloud_run_service_iam_member" "prefect_server_public_invoker" {
   location = google_cloud_run_v2_service.prefect_server.location
   project  = var.project_id
   service  = google_cloud_run_v2_service.prefect_server.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+resource "google_cloud_run_v2_service" "backend" {
+  depends_on = [
+    google_project_service.services,
+    google_service_account.backend,
+    google_project_iam_member.backend_bigquery_reader,
+  ]
+
+  deletion_protection = false
+  location            = var.region
+  name                = var.cloud_run_backend_service_name
+  project             = var.project_id
+  labels              = local.labels
+
+  template {
+    service_account = google_service_account.backend.email
+
+    scaling {
+      min_instance_count = 1
+    }
+
+    containers {
+      image = local.backend_image
+
+      env {
+        name  = "GCP_PROJECT"
+        value = var.project_id
+      }
+
+      env {
+        name  = "BQ_DATASET"
+        value = var.bq_dataset_id
+      }
+
+      env {
+        name  = "PARLEMAN_API_KEY"
+        value = var.parleman_api_key
+      }
+
+      ports {
+        container_port = 8000
+      }
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "1Gi"
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_run_service_iam_member" "backend_public_invoker" {
+  location = google_cloud_run_v2_service.backend.location
+  project  = var.project_id
+  service  = google_cloud_run_v2_service.backend.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+resource "google_cloud_run_v2_service" "frontend" {
+  depends_on = [
+    google_project_service.services,
+    google_service_account.frontend,
+    google_cloud_run_v2_service.backend,
+  ]
+
+  deletion_protection = false
+  location            = var.region
+  name                = var.cloud_run_frontend_service_name
+  project             = var.project_id
+  labels              = local.labels
+
+  template {
+    service_account = google_service_account.frontend.email
+
+    scaling {
+      min_instance_count = 1
+    }
+
+    containers {
+      image = local.frontend_image
+
+      env {
+        name  = "PARLEMAN_API_URL"
+        value = google_cloud_run_v2_service.backend.uri
+      }
+
+      env {
+        name  = "PARLEMAN_API_KEY"
+        value = var.parleman_api_key
+      }
+
+      env {
+        name  = "STREAMLIT_SERVER_HEADLESS"
+        value = "true"
+      }
+
+      env {
+        name  = "STREAMLIT_SERVER_ADDRESS"
+        value = "0.0.0.0"
+      }
+
+      env {
+        name  = "STREAMLIT_SERVER_PORT"
+        value = "8501"
+      }
+
+      ports {
+        container_port = 8501
+      }
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "1Gi"
+        }
+      }
+    }
+  }
+}
+
+resource "google_cloud_run_service_iam_member" "frontend_public_invoker" {
+  location = google_cloud_run_v2_service.frontend.location
+  project  = var.project_id
+  service  = google_cloud_run_v2_service.frontend.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }

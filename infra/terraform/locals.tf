@@ -18,6 +18,8 @@ locals {
 
   worker_image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_registry_repository_id}/${var.cloud_run_worker_image_name}:${var.cloud_run_worker_image_tag}"
   server_image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_registry_repository_id}/${var.cloud_run_server_image_name}:${var.cloud_run_server_image_tag}"
+  backend_image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_registry_repository_id}/${var.cloud_run_backend_image_name}:${var.cloud_run_backend_image_tag}"
+  frontend_image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_registry_repository_id}/${var.cloud_run_frontend_image_name}:${var.cloud_run_frontend_image_tag}"
 
   prefect_api_url = "${google_cloud_run_v2_service.prefect_server.uri}/api"
 

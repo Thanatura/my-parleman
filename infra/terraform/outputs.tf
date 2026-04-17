@@ -54,3 +54,23 @@ output "prefect_server_database_connection_url" {
   value       = module.vm_db.connection_string
   sensitive   = true
 }
+
+output "backend_url" {
+  description = "Cloud Run backend (FastAPI) URL."
+  value       = google_cloud_run_v2_service.backend.uri
+}
+
+output "backend_service_account_email" {
+  description = "Backend Cloud Run service account email."
+  value       = google_service_account.backend.email
+}
+
+output "frontend_url" {
+  description = "Cloud Run frontend (Streamlit) URL."
+  value       = google_cloud_run_v2_service.frontend.uri
+}
+
+output "frontend_service_account_email" {
+  description = "Frontend Cloud Run service account email."
+  value       = google_service_account.frontend.email
+}
