@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --project ingest --all-extras --dev
       - name: Run Mypy
-        run: uv run --project ingest mypy ingest
+        run: uv run --project ingest python -m mypy --config-file ingest/pyproject.toml
 
   test:
     name: Testing
@@ -53,4 +53,4 @@ jobs:
       - name: Install dependencies
         run: uv sync --project ingest --all-extras --dev
       - name: Run Pytest
-        run: uv run --project ingest pytest ingest/tests
+        run: uv run --project ingest python -m pytest ingest/tests
