@@ -16,6 +16,7 @@ Ce README est orienté examinateur : il décrit le chemin minimal pour lancer le
 - gcloud CLI
 - Terraform >= 1.8
 - Prefect CLI (installé via les dépendances Python du projet)
+- pre-commit (installé via le projet tooling racine)
 
 Préparer votre contexte GCP :
 
@@ -73,6 +74,7 @@ dbt_parlemAn/            # Projet dbt
 ingest/                  # Code ingestion (flows Prefect + parsing + chargement BQ)
 infra/                   # Docker compose local + Terraform
 app/                     # API FastAPI + UI Streamlit
+pyproject.toml           # Projet tooling racine (pre-commit)
 .env.example             # Variables d'environnement
 prefect.yaml             # Deployments Prefect
 ```
@@ -193,7 +195,16 @@ uv run --project ingest prefect deploy --all
 Installer les dépendances :
 
 ```bash
+uv sync --project . --dev
+uv sync --project app
 uv sync --project ingest
+```
+
+Installer et lancer pre-commit (depuis la racine) :
+
+```bash
+uv run --project . pre-commit install
+uv run --project . pre-commit run --all-files
 ```
 
 Lancer les tests:
@@ -220,8 +231,9 @@ uv run --project ingest python -m ingest.flows.run_dbt_build
 - `make push_prefect_worker`
 - `make push_prefect_server`
 - `make setup_prefect_variables`
+- `make setup_precommit` (installe pre-commit depuis le projet racine)
+- `make run_precommit` (lance tous les hooks pre-commit)
 - `make run_all_flows` (déclenche tous les flows d'ingestion hors `dbt_build` en parallèle)
-- `make run_all_flows_serial` (idem, en séquentiel)
 - `make run_marts_api` (API FastAPI pour exposer les `mart_*` BigQuery)
 - `make run_marts_ui` (interface Streamlit connectée à l'API)
 

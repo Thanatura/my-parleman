@@ -91,3 +91,10 @@ run_marts_ui:
 	@set -euo pipefail; \
 	set -a; . ./.env; set +a; \
 	PYTHONPATH="$$(pwd):$$(pwd)/app" PARLEMAN_API_URL="$${PARLEMAN_API_URL:-http://127.0.0.1:8000}" uv run --project app streamlit run app/frontend/App.py
+
+setup_precommit:
+	uv sync --project . --dev
+	uv run --project . pre-commit install
+
+run_precommit:
+	uv run --project . pre-commit run --all-files
