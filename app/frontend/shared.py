@@ -8,11 +8,15 @@ import requests
 
 
 DEFAULT_API_URL = os.getenv("PARLEMAN_API_URL", "http://127.0.0.1:8000")
+API_KEY = os.getenv("PARLEMAN_API_KEY", "").strip() or None
 JsonObject: TypeAlias = dict[str, object]
 
 
 def fetch_json(api_base_url: str, path: str) -> JsonObject:
-    response = requests.get(f"{api_base_url.rstrip('/')}{path}", timeout=30)
+    headers = {"X-API-Key": API_KEY} if API_KEY else None
+    response = requests.get(
+        f"{api_base_url.rstrip('/')}{path}", timeout=30, headers=headers
+    )
     response.raise_for_status()
     payload = response.json()
     if not isinstance(payload, dict):

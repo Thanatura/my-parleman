@@ -14,6 +14,7 @@ Cette application expose les marts dbt depuis BigQuery via une API FastAPI, puis
 
 - `GCP_PROJECT`
 - `BQ_DATASET`
+- `PARLEMAN_API_KEY` (clé API attendue par le backend, envoyée en header `X-API-Key`)
 - optionnel: `SERVICE_ACCOUNT_INFO` (contenu JSON d'un compte de service)
 
 Si `SERVICE_ACCOUNT_INFO` n'est pas fourni, l'application utilise les Application Default Credentials.
