@@ -153,7 +153,7 @@ resource "google_cloud_run_v2_service" "prefect_worker" {
 
     containers {
       image  = local.worker_image
-      command = ["prefect", "worker", "start", "--install-policy", "never", "--with-healthcheck", "-p", "parleman-work-pool", "-t", "cloud-run"]
+      command = ["/app/ingest/.venv/bin/python", "/app/infra/prefect/scripts/worker_http_wrapper.py"]
 
       dynamic "env" {
         for_each = local.worker_env

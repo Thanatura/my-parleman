@@ -11,6 +11,7 @@ COPY ./ingest/uv.lock ./ingest/uv.lock
 COPY ./ingest/flows ./ingest/flows
 COPY ./ingest/lib ./ingest/lib
 COPY ./dbt_parlemAn ./dbt_parlemAn
+COPY ./infra/prefect/scripts ./infra/prefect/scripts
 
 RUN uv sync --project /app/ingest --no-dev --no-cache --no-editable --frozen
 

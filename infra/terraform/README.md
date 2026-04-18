@@ -107,6 +107,8 @@ The main Terraform stack provisions two additional Cloud Run services:
 
 Both services are publicly invokable and run with minimal permissions.
 
+The Prefect worker runs behind a small local HTTP wrapper so Cloud Run gets a real health endpoint while the Prefect process stays supervised. It also has a configurable startup probe so you can make the initial boot more tolerant when the worker or its dependencies are slow to come up.
+
 ### Configuration
 
 Add to `terraform.tfvars`:
@@ -119,6 +121,13 @@ cloud_run_frontend_image_name   = "parleman-frontend"
 cloud_run_frontend_image_tag    = "latest"
 cloud_run_frontend_service_name = "parleman-frontend"
 parleman_api_key                = "YOUR_SECURE_API_KEY_HERE"
+
+# Optional worker startup probe tuning
+prefect_worker_startup_probe_initial_delay_seconds = 60
+prefect_worker_startup_probe_timeout_seconds       = 5
+prefect_worker_startup_probe_period_seconds        = 10
+prefect_worker_startup_probe_failure_threshold     = 18
+prefect_worker_startup_probe_path                  = "/health"
 ```
 
 ### Environment Variables (Set at Deploy Time)
@@ -212,6 +221,11 @@ Defined in `variables.tf`:
 - `vm_db_enable_ssh`
 - `vm_db_ssh_source_ranges`
 - `cloud_run_env_vars` (extra env vars merged into worker env)
+- `prefect_worker_startup_probe_initial_delay_seconds`
+- `prefect_worker_startup_probe_timeout_seconds`
+- `prefect_worker_startup_probe_period_seconds`
+- `prefect_worker_startup_probe_failure_threshold`
+- `prefect_worker_startup_probe_path`
 
 ## Outputs
 
