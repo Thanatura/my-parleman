@@ -38,7 +38,7 @@ def run_dbt_build(
 ) -> None:
     logger = get_run_logger()
 
-    project_dir = Path(__file__).resolve().parents[1] / "dbt_parlemAn"
+    project_dir = Path(__file__).resolve().parents[2] / "dbt_parlemAn"
 
     with tempfile.TemporaryDirectory(prefix="dbt_profiles_") as profiles_dir:
         keyfile_path = Path(profiles_dir) / "service_account.json"
