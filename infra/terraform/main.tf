@@ -44,7 +44,7 @@ resource "google_service_account" "frontend" {
 resource "google_bigquery_dataset" "parleman" {
   dataset_id                 = var.bq_dataset_id
   description                = "Core analytical dataset for ParlemAN."
-  delete_contents_on_destroy = false
+  delete_contents_on_destroy = var.bq_delete_contents_on_destroy
   friendly_name              = "ParlemAN"
   location                   = var.bq_location
   project                    = var.project_id

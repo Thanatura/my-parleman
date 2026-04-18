@@ -30,6 +30,12 @@ variable "bq_location" {
   default     = "EU"
 }
 
+variable "bq_delete_contents_on_destroy" {
+  description = "Whether Terraform should delete all dataset contents before deleting the BigQuery dataset during destroy."
+  type        = bool
+  default     = true
+}
+
 variable "artifact_registry_repository_id" {
   description = "Docker repository that stores the Prefect worker image."
   type        = string

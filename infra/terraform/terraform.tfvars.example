@@ -3,6 +3,7 @@ region                          = "europe-west1"
 environment                     = "prod"
 bq_dataset_id                   = null
 bq_location                     = "EU"
+bq_delete_contents_on_destroy   = true
 artifact_registry_repository_id  = "parleman-artifact-repo"
 runner_service_account_id       = "parleman-bq-runner"
 worker_service_account_id       = "parleman-prefect-worker"

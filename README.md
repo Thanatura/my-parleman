@@ -6,8 +6,6 @@ Pipeline de données pour les jeux open data de l'Assemblée nationale :
 - transformations dbt,
 - orchestration avec Prefect.
 
-Ce README est orienté examinateur : il décrit le chemin minimal pour lancer le projet sur votre propre projet GCP.
-
 ## Prérequis
 
 - Python 3.13
@@ -125,7 +123,7 @@ Cette stack provisionne notamment :
 - Cloud Run Prefect server,
 - Cloud Run Prefect worker.
 
-#### changements de sécurité récents
+#### Changements de sécurité récents
 
 - le service `prefect_server` est public par défaut mais protégé par une clé (`prefect_server_allow_unauthenticated = true`, `prefect_server_api_auth_string`),
 - le serveur Prefect utilise un service account dédié (`server_service_account_id`),
@@ -216,7 +214,7 @@ uv pip install dbt-bigquery
 uv run --project ingest python -m ingest.flows.run_dbt_build
 ```
 
-## commandes make disponibles
+## Commandes make disponibles
 
 - `make push_prefect_worker`
 - `make push_prefect_server`
@@ -249,10 +247,3 @@ Dans un second terminal :
 ```bash
 make run_marts_ui
 ```
-
-## sécurité
-
-- Ne pas committer de `.env` réel.
-- Ne pas committer de clés de service account.
-- Limiter les permissions IAM au strict nécessaire.
-- Si `prefect_server` est exposé publiquement, exiger `PREFECT_SERVER_API_AUTH_STRING` côté serveur et `PREFECT_API_AUTH_STRING` côté clients/workers.
