@@ -243,12 +243,12 @@ resource "google_cloud_run_v2_service" "prefect_server" {
   }
 }
 
-resource "google_cloud_run_service_iam_member" "prefect_server_public_invoker" {
+resource "google_cloud_run_v2_service_iam_member" "prefect_server_public_invoker" {
   count = var.prefect_server_allow_unauthenticated ? 1 : 0
 
   location = google_cloud_run_v2_service.prefect_server.location
   project  = var.project_id
-  service  = google_cloud_run_v2_service.prefect_server.name
+  name     = google_cloud_run_v2_service.prefect_server.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
@@ -305,10 +305,10 @@ resource "google_cloud_run_v2_service" "backend" {
   }
 }
 
-resource "google_cloud_run_service_iam_member" "backend_public_invoker" {
+resource "google_cloud_run_v2_service_iam_member" "backend_public_invoker" {
   location = google_cloud_run_v2_service.backend.location
   project  = var.project_id
-  service  = google_cloud_run_v2_service.backend.name
+  name     = google_cloud_run_v2_service.backend.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
@@ -375,10 +375,10 @@ resource "google_cloud_run_v2_service" "frontend" {
   }
 }
 
-resource "google_cloud_run_service_iam_member" "frontend_public_invoker" {
+resource "google_cloud_run_v2_service_iam_member" "frontend_public_invoker" {
   location = google_cloud_run_v2_service.frontend.location
   project  = var.project_id
-  service  = google_cloud_run_v2_service.frontend.name
+  name     = google_cloud_run_v2_service.frontend.name
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
