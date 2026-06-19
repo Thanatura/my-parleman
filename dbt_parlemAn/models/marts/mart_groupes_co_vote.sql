@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
-with scrutins_groupes_enriched as (select * from {{ ref('int_scrutin_groupes_enriched') }})
+with scrutins_groupes_enriched as (select * from {{ ref('stg_scrutin_groupes_enriched') }})
      select 
         count(1) as nb_co_votes,
        s1.groupe_uid as groupe_uid_1, 

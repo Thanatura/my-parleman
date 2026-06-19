@@ -65,42 +65,42 @@ models:
   - name: stg_amendements
     description: Staging model for amendements data.
 
-  - name: int_depute_mandats
+  - name: stg_depute_mandats
     description: Intermediate model linking deputes and mandats.
 
-  - name: int_depute_commissions
+  - name: stg_depute_commissions
     description: Intermediate model linking deputes and commissions.
 
-  - name: int_interventions_enriched
+  - name: stg_interventions_enriched
     description: Intermediate enriched interventions model.
   
-  - name: int_groupes
+  - name: stg_groupes
     description: Intermediate model for groupes data.
 
-  - name: int_scrutin_groupes
+  - name: stg_scrutin_groupes
     description: Intermediate model for scrutin group votes.
   
-  - name: int_scrutin_groupes_enriched
+  - name: stg_scrutin_groupes_enriched
     description: Intermediate enriched model for scrutin group votes.
 
-  - name: int_dossier_actes
+  - name: stg_dossier_actes
     description: Intermediate model for timeline and act counts per dossier.
 
-  - name: int_dossier_documents
+  - name: stg_dossier_documents
     description: Intermediate model for document counts per dossier.
 
-  - name: int_dossier_scrutins
+  - name: stg_dossier_scrutins
     description: Intermediate model for vote statistics per dossier.
 
-  - name: int_dossier_amendements
+  - name: stg_dossier_amendements
     description: Intermediate model for amendment statistics per dossier.
-  - name: int_depute_dans_partis
+  - name: stg_depute_dans_partis
     description: Intermediate model linking deputes to their partis and groupes.
 
-  - name: int_liste_siege
+  - name: stg_liste_siege
     description: Intermediate model for mapping deputes to their place in the hemicycle.
   
-  - name: int_mandats_actifs
+  - name: stg_mandats_actifs
     description: Intermediate model for active mandats and their circonscriptions.
 
   - name: mart_groupes_co_vote

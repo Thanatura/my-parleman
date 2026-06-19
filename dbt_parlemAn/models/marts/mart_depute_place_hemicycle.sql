@@ -2,14 +2,17 @@
 
 with deputes_dans_partis as (
     select *
-    from {{ ref('int_depute_dans_partis') }}
+    from {{ ref('stg_depute_dans_partis') }}
 ),liste_sieges as (
     select *
-    from {{ ref('int_liste_siege') }}
+    from {{ ref('stg_liste_siege') }}
 ),
 acteurs as (
-    select *
-    from {{ ref('stg_deputes') }}
+    select
+      uid as depute_uid,
+      nom,
+      prenom
+    from {{ source('raw_parleman', 'acteurs') }}
 )
 
 SELECT DISTINCT 

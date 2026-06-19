@@ -7,7 +7,7 @@ with actes as (
         date_acte,
         type_acte,
         acte_code
-    from {{ ref('stg_dossier_actes_legislatifs') }}
+    from {{ source('raw_parleman', 'dossier_actes_legislatifs') }}
 )
 
 select

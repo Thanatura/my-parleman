@@ -2,15 +2,15 @@
 
 with depute_mandats as (
     select
-      m.mandat_uid,
-      m.depute_uid,
+      m.uid as mandat_uid,
+      m.acteur_ref as depute_uid,
       d.nom,
       d.prenom,
-      d.nom_complet,
+      concat(coalesce(d.prenom, ''), ' ', coalesce(d.nom, '')) as nom_complet,
       d.trigramme,
       m.legislature,
       m.type_organe,
-      m.organe_uid,
+      m.organe_ref as organe_uid,
       m.election_departement,
       m.election_num_departement,
       m.election_num_circo,
@@ -21,13 +21,21 @@ with depute_mandats as (
       m.nomin_principale,
       m.mandature_premiere_election,
       m.mandature_place_hemicycle
-    from {{ ref('stg_mandats') }} m
-    left join {{ ref('stg_deputes') }} d
-      on m.depute_uid = d.depute_uid
+    from {{ source('raw_parleman', 'mandats') }} m
+    left join {{ source('raw_parleman', 'acteurs') }} d
+      on m.acteur_ref = d.uid
 ),
   organes as (
-    select *
-    from {{ ref('stg_organes') }}
+    select
+      uid as organe_uid,
+      libelle,
+      gp_position_politique,
+      gp_couleur,
+      legislature,
+      date_debut,
+      date_fin,
+      code_type
+    from {{ source('raw_parleman', 'organes') }}
   ),
 interventions_depute as (
     select
@@ -35,7 +43,7 @@ interventions_depute as (
       count(distinct intervention_id) as nb_interventions_depute,
       min(date_seance) as premiere_intervention_depute,
       max(date_seance) as derniere_intervention_depute
-    from {{ ref('int_interventions_enriched') }}
+    from {{ ref('stg_interventions_enriched') }}
     group by depute_uid
 ),
 groupes_politiques as (

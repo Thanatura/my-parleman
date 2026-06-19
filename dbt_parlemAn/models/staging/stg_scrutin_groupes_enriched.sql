@@ -1,7 +1,7 @@
 {{ config(materialized='view') }}
 
-with groupes as (select * from {{ ref('int_groupes') }}),
-     scrutins_groupes as (select * from {{ ref('int_scrutin_groupes') }})
+with groupes as (select * from {{ ref('stg_groupes') }}),
+     scrutins_groupes as (select * from {{ ref('stg_scrutin_groupes') }})
      select 
        g.groupe_uid,
        g.groupe_libelle,

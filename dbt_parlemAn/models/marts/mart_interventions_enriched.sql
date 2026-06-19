@@ -16,4 +16,4 @@ select
   profession_categorie,
   profession_famille,
   texte
-from {{ ref('int_interventions_enriched') }}
+from {{ ref('stg_interventions_enriched') }}

@@ -1,12 +1,17 @@
 {{ config(materialized='view') }}
 
 with acteurs as (
-    select *
-    from {{ ref('stg_deputes') }}
+    select
+      uid as depute_uid
+    from {{ source('raw_parleman', 'acteurs') }}
 ),
 mandats as (
-    select *
-    from {{ ref('stg_mandats') }}
+    select
+      uid as mandat_uid,
+      acteur_ref as depute_uid,
+      type_organe,
+      mandature_place_hemicycle
+    from {{ source('raw_parleman', 'mandats') }}
 )
 
 SELECT DISTINCT 

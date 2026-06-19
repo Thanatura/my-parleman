@@ -2,11 +2,24 @@
 
 with depute_mandats as (
     select *
-    from {{ ref('int_depute_mandats') }}
+    from {{ ref('stg_depute_mandats') }}
 ),
 commissions as (
-    select *
-    from {{ ref('stg_commissions') }}
+    select
+      uid as commission_uid,
+      code_type,
+      libelle,
+      libelle_abrege,
+      libelle_abrev,
+      legislature,
+      date_debut,
+      date_fin,
+      circo_region_type,
+      circo_region_libelle,
+      gp_position_politique
+    from {{ source('raw_parleman', 'organes') }}
+    where lower(coalesce(code_type, '')) like '%com%'
+       or lower(coalesce(libelle, '')) like '%commission%'
 )
 
 select

@@ -3,9 +3,9 @@
 with amendements as (
     select
         dossier_legislatif_ref as dossier_uid,
-        amendement_uid,
+        uid as amendement_uid,
         sort
-    from {{ ref('stg_amendements') }}
+    from {{ source('raw_parleman', 'amendements') }}
 )
 
 select

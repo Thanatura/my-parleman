@@ -2,7 +2,7 @@
 
 with dossiers as (
     select
-        dossier_uid,
+        uid as dossier_uid,
         legislature,
         titre_dossier,
         titre_chemin,
@@ -11,7 +11,7 @@ with dossiers as (
         initiateur_acteur_ref,
         initiateur_mandat_ref,
         initiateur_organe_ref
-    from {{ ref('stg_dossiers_parlementaires') }}
+    from {{ source('raw_parleman', 'dossiers_parlementaires') }}
 ),
 
 actes as (
@@ -21,14 +21,14 @@ actes as (
         date_dernier_acte,
         nombre_actes_total,
         est_adopte
-    from {{ ref('int_dossier_actes') }}
+    from {{ ref('stg_dossier_actes') }}
 ),
 
 documents as (
     select
         dossier_uid,
         nombre_documents_total
-    from {{ ref('int_dossier_documents') }}
+    from {{ ref('stg_dossier_documents') }}
 ),
 
 scrutins as (
@@ -41,7 +41,7 @@ scrutins as (
         volume_votes_pour,
         volume_votes_contre,
         volume_votes_abstentions
-    from {{ ref('int_dossier_scrutins') }}
+    from {{ ref('stg_dossier_scrutins') }}
 ),
 
 amendements as (
@@ -50,7 +50,7 @@ amendements as (
         nombre_amendements_total,
         nombre_amendements_adoptes,
         nombre_amendements_rejetes
-    from {{ ref('int_dossier_amendements') }}
+    from {{ ref('stg_dossier_amendements') }}
 )
 
 select

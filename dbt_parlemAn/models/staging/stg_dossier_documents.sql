@@ -2,10 +2,10 @@
 
 with documents as (
     select
-        dossier_uid,
-        document_uid,
+        dossier_ref as dossier_uid,
+        uid as document_uid,
         type_code
-    from {{ ref('stg_documents') }}
+    from {{ source('raw_parleman', 'documents') }}
 )
 
 select

@@ -2,7 +2,7 @@
 
 with interventions as (
     select *
-    from {{ ref('int_interventions_enriched') }}
+    from {{ ref('stg_interventions_enriched') }}
 )
 
 select

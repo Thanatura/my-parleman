@@ -1,8 +1,17 @@
 {{ config(materialized='view') }}
 
 with organes as (
-    select *
-    from {{ ref('stg_organes') }}
+    select
+      uid as organe_uid,
+      libelle,
+      libelle_abrev,
+      gp_position_politique,
+      gp_couleur,
+      legislature,
+      date_debut,
+      date_fin,
+      code_type
+    from {{ source('raw_parleman', 'organes') }}
 )
 select
       organe_uid as groupe_uid,

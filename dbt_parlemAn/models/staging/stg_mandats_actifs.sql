@@ -1,8 +1,16 @@
 {{ config(materialized='view') }}
 
-with organes as (    
-    select *
-    from {{ ref('stg_organes') }}
+with organes as (
+    select
+      uid as organe_uid,
+      circo_dep_code,
+      circo_dep_libelle,
+      circo_numero,
+      circo_region_type,
+      circo_region_libelle,
+      date_fin,
+      code_type
+    from {{ source('raw_parleman', 'organes') }}
 )
 
 SELECT 

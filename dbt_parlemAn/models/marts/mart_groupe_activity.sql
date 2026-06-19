@@ -2,15 +2,23 @@
 
 with depute_mandats as (
     select *
-    from {{ ref('int_depute_mandats') }}
+    from {{ ref('stg_depute_mandats') }}
 ),
 organes as (
-    select *
-    from {{ ref('stg_organes') }}
+    select
+      uid as organe_uid,
+      libelle,
+      gp_position_politique,
+      gp_couleur,
+      legislature,
+      date_debut,
+      date_fin,
+      code_type
+    from {{ source('raw_parleman', 'organes') }}
 ),
 interventions as (
     select *
-    from {{ ref('int_interventions_enriched') }}
+    from {{ ref('stg_interventions_enriched') }}
 ),
 groupes as (
     select

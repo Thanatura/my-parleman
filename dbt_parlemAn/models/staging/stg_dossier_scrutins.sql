@@ -2,20 +2,20 @@
 
 with scrutins as (
     select
-        scrutin_uid,
+        uid as scrutin_uid,
         sort_code,
         synthese_nombre_votants,
         synthese_pour,
         synthese_contre,
         synthese_abstentions
-    from {{ ref('stg_scrutins') }}
+    from {{ source('raw_parleman', 'scrutins') }}
 ),
 
 actes as (
     select
         dossier_uid,
         vote_ref
-    from {{ ref('stg_dossier_actes_legislatifs') }}
+    from {{ source('raw_parleman', 'dossier_actes_legislatifs') }}
     where vote_ref is not null
 )
 

@@ -2,11 +2,11 @@
 
 with depute_commissions as (
     select *
-    from {{ ref('int_depute_commissions') }}
+    from {{ ref('stg_depute_commissions') }}
 ),
 interventions as (
     select *
-    from {{ ref('int_interventions_enriched') }}
+    from {{ ref('stg_interventions_enriched') }}
 ),
 commission_members as (
     select
