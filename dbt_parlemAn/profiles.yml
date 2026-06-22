@@ -1,0 +1,10 @@
+dbt_parlemAn:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GCP_PROJECT') }}"
+      dataset: "{{ env_var('BQ_DATASET') }}"
+      threads: 1
+      timeout_seconds: 300
