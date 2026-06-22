@@ -7,130 +7,454 @@ sources:
     schema: "{{ env_var('BQ_DATASET') }}"
     tables:
       - name: acteurs
+        description: Columns extracted from ingest/lib/depute/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: civilite
+            description: "STRING"
+          - name: prenom
+            description: "STRING"
+          - name: nom
+            description: "STRING"
+          - name: alpha
+            description: "STRING"
+          - name: trigramme
+            description: "STRING"
+          - name: date_naissance
+            description: "DATE"
+          - name: ville_naissance
+            description: "STRING"
+          - name: departement_naissance
+            description: "STRING"
+          - name: pays_naissance
+            description: "STRING"
+          - name: profession_libelle
+            description: "STRING"
+          - name: profession_categorie
+            description: "STRING"
+          - name: profession_famille
+            description: "STRING"
+          - name: uri_hatvp
+            description: "STRING"
+          - name: ingested_at
+            description: "TIMESTAMP (REQUIRED)"
       - name: mandats
+        description: Columns extracted from ingest/lib/depute/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: acteur_ref
+            description: "STRING (REQUIRED)"
+          - name: xsi_type
+            description: "STRING"
+          - name: legislature
+            description: "STRING"
+          - name: type_organe
+            description: "STRING"
+          - name: organe_ref
+            description: "STRING"
+          - name: date_debut
+            description: "DATE"
+          - name: date_fin
+            description: "DATE"
+          - name: date_publication
+            description: "DATE"
+          - name: preseance
+            description: "INTEGER"
+          - name: nomin_principale
+            description: "BOOLEAN"
+          - name: code_qualite
+            description: "STRING"
+          - name: lib_qualite
+            description: "STRING"
+          - name: election_departement
+            description: "STRING"
+          - name: election_num_departement
+            description: "STRING"
+          - name: election_num_circo
+            description: "STRING"
+          - name: election_cause_mandat
+            description: "STRING"
+          - name: mandature_date_prise_fonction
+            description: "DATE"
+          - name: mandature_cause_fin
+            description: "STRING"
+          - name: mandature_premiere_election
+            description: "BOOLEAN"
+          - name: mandature_place_hemicycle
+            description: "INTEGER"
+          - name: ingested_at
+            description: "TIMESTAMP (REQUIRED)"
       - name: organes
+        description: Columns extracted from ingest/lib/depute/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: xsi_type
+            description: "STRING"
+          - name: code_type
+            description: "STRING"
+          - name: libelle
+            description: "STRING"
+          - name: libelle_abrege
+            description: "STRING"
+          - name: libelle_abrev
+            description: "STRING"
+          - name: regime
+            description: "STRING"
+          - name: legislature
+            description: "STRING"
+          - name: date_debut
+            description: "DATE"
+          - name: date_fin
+            description: "DATE"
+          - name: circo_numero
+            description: "STRING"
+          - name: circo_region_type
+            description: "STRING"
+          - name: circo_region_libelle
+            description: "STRING"
+          - name: circo_dep_code
+            description: "STRING"
+          - name: circo_dep_libelle
+            description: "STRING"
+          - name: gp_couleur
+            description: "STRING"
+          - name: gp_preseance
+            description: "INTEGER"
+          - name: gp_position_politique
+            description: "STRING"
+          - name: ingested_at
+            description: "TIMESTAMP (REQUIRED)"
       - name: interventions
-      - name: points_seance
+        description: "Raw interventions table (columns in ingest definitions)"
       - name: comptes_rendus
+        description: "Raw comptes_rendus table (columns in ingest definitions)"
       - name: scrutins
-      - name: questions_ecrites
-      - name: questions_ecrites_renouvellements
-      - name: scrutin_votes_individuels
+        description: Columns extracted from ingest/lib/scrutins/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: numero
+            description: "STRING"
+          - name: legislature
+            description: "STRING"
+          - name: organe_ref
+            description: "STRING"
+          - name: session_ref
+            description: "STRING"
+          - name: seance_ref
+            description: "STRING"
+          - name: date_scrutin
+            description: "DATE"
+          - name: quantieme_jour_seance
+            description: "INTEGER"
+          - name: type_vote_code
+            description: "STRING"
+          - name: type_vote_libelle
+            description: "STRING"
+          - name: type_majorite
+            description: "STRING"
+          - name: sort_code
+            description: "STRING"
+          - name: sort_libelle
+            description: "STRING"
+          - name: titre
+            description: "STRING"
+          - name: demandeur_texte
+            description: "STRING"
+          - name: demandeur_reference_legislative
+            description: "STRING"
+          - name: objet_libelle
+            description: "STRING"
+          - name: objet_dossier_legislatif
+            description: "STRING"
+          - name: objet_reference_legislative
+            description: "STRING"
+          - name: mode_publication_votes
+            description: "STRING"
+          - name: lieu_vote
+            description: "STRING"
+          - name: synthese_nombre_votants
+            description: "INTEGER"
+          - name: synthese_suffrages_exprimes
+            description: "INTEGER"
+          - name: synthese_nbr_suffrages_requis
+            description: "INTEGER"
+          - name: synthese_annonce
+            description: "STRING"
+          - name: synthese_non_votants
+            description: "INTEGER"
+          - name: synthese_pour
+            description: "INTEGER"
+          - name: synthese_contre
+            description: "INTEGER"
+          - name: synthese_abstentions
+            description: "INTEGER"
+          - name: synthese_non_votants_volontaires
+            description: "INTEGER"
       - name: scrutin_groupes_votes
+        description: Columns extracted from ingest/lib/scrutins/bq_schemas.py
+        columns:
+          - name: scrutin_uid
+            description: "STRING (REQUIRED)"
+          - name: organe_ref_assemblee
+            description: "STRING"
+          - name: groupe_organe_ref
+            description: "STRING"
+          - name: nombre_membres_groupe
+            description: "INTEGER"
+          - name: position_majoritaire
+            description: "STRING"
+          - name: non_votants
+            description: "INTEGER"
+          - name: pour
+            description: "INTEGER"
+          - name: contre
+            description: "INTEGER"
+          - name: abstentions
+            description: "INTEGER"
+          - name: non_votants_volontaires
+            description: "INTEGER"
+      - name: scrutin_votes_individuels
+        description: Columns extracted from ingest/lib/scrutins/bq_schemas.py
+        columns:
+          - name: scrutin_uid
+            description: "STRING (REQUIRED)"
+          - name: groupe_organe_ref
+            description: "STRING"
+          - name: position_vote
+            description: "STRING (REQUIRED)"
+          - name: acteur_ref
+            description: "STRING"
+          - name: mandat_ref
+            description: "STRING"
+          - name: par_delegation
+            description: "BOOLEAN"
+          - name: num_place
+            description: "STRING"
+          - name: cause_position_vote
+            description: "STRING"
+          - name: source
+            description: "STRING (REQUIRED)"
+      - name: questions_ecrites
+        description: Columns extracted from ingest/lib/questions_ecrites/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: numero
+            description: "STRING"
+          - name: regime
+            description: "STRING"
+          - name: legislature
+            description: "STRING"
+          - name: type
+            description: "STRING"
+          - name: rubrique
+            description: "STRING"
+          - name: tete_analyse
+            description: "STRING"
+          - name: analyse
+            description: "STRING"
+          - name: auteur_acteur_ref
+            description: "STRING"
+          - name: auteur_mandat_ref
+            description: "STRING"
+          - name: auteur_groupe_organe_ref
+            description: "STRING"
+          - name: auteur_groupe_abrege
+            description: "STRING"
+          - name: auteur_groupe_developpe
+            description: "STRING"
+          - name: min_int_organe_ref
+            description: "STRING"
+          - name: min_int_abrege
+            description: "STRING"
+          - name: min_int_developpe
+            description: "STRING"
+          - name: texte_question
+            description: "STRING"
+          - name: date_jo_question
+            description: "DATE"
+          - name: page_jo_question
+            description: "STRING"
+          - name: texte_reponse
+            description: "STRING"
+          - name: date_jo_reponse
+            description: "DATE"
+          - name: page_jo_reponse
+            description: "STRING"
+      - name: questions_ecrites_renouvellements
+        description: Columns extracted from ingest/lib/questions_ecrites/bq_schemas.py
+        columns:
+          - name: question_uid
+            description: "STRING (REQUIRED)"
+          - name: type_jo
+            description: "STRING"
+          - name: date_jo
+            description: "DATE"
+          - name: organe_ref
+            description: "STRING"
+          - name: abrege
+            description: "STRING"
+          - name: developpe
+            description: "STRING"
       - name: documents
+        description: Columns extracted from ingest/lib/dossiers_legislatifs/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: legislature
+            description: "STRING"
+          - name: type_code
+            description: "STRING"
+          - name: type_libelle
+            description: "STRING"
+          - name: denomination_structurelle
+            description: "STRING"
+          - name: provenance
+            description: "STRING"
+          - name: titre_principal
+            description: "STRING"
+          - name: titre_principal_court
+            description: "STRING"
+          - name: dossier_ref
+            description: "STRING"
+          - name: date_creation
+            description: "TIMESTAMP"
+          - name: date_depot
+            description: "TIMESTAMP"
+          - name: date_publication
+            description: "TIMESTAMP"
+          - name: date_publication_web
+            description: "TIMESTAMP"
+          - name: famille_depot_code
+            description: "STRING"
+          - name: famille_depot_libelle
+            description: "STRING"
+          - name: famille_classe_code
+            description: "STRING"
+          - name: famille_classe_libelle
+            description: "STRING"
+          - name: famille_espece_code
+            description: "STRING"
+          - name: famille_espece_libelle
+            description: "STRING"
+          - name: type_sous_type_code
+            description: "STRING"
+          - name: type_sous_type_libelle
+            description: "STRING"
+          - name: num_notice
+            description: "STRING"
+          - name: formule
+            description: "STRING"
+          - name: adoption_conforme
+            description: "BOOLEAN"
+          - name: auteur_ref
+            description: "STRING"
+          - name: auteur_qualite
+            description: "STRING"
+          - name: isbn
+            description: "STRING"
+          - name: issn
+            description: "STRING"
+          - name: dian
+            description: "STRING"
+          - name: nb_page
+            description: "INTEGER"
       - name: dossiers_parlementaires
+        description: Columns extracted from ingest/lib/dossiers_legislatifs/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: legislature
+            description: "STRING"
+          - name: titre_dossier
+            description: "STRING"
+          - name: titre_chemin
+            description: "STRING"
+          - name: procedure_parlementaire_code
+            description: "STRING"
+          - name: procedure_parlementaire_libelle
+            description: "STRING"
+          - name: initiateur_acteur_ref
+            description: "STRING"
+          - name: initiateur_mandat_ref
+            description: "STRING"
+          - name: initiateur_organe_ref
+            description: "STRING"
+          - name: nombre_actes_legislatifs
+            description: "INTEGER"
       - name: dossier_actes_legislatifs
+        description: Columns extracted from ingest/lib/dossiers_legislatifs/bq_schemas.py
+        columns:
+          - name: dossier_uid
+            description: "STRING (REQUIRED)"
+          - name: acte_uid
+            description: "STRING (REQUIRED)"
+          - name: acte_code
+            description: "STRING"
+          - name: acte_libelle_canonique
+            description: "STRING"
+          - name: acte_libelle_court
+            description: "STRING"
+          - name: organe_ref
+            description: "STRING"
+          - name: date_acte
+            description: "TIMESTAMP"
+          - name: type_acte
+            description: "STRING"
+          - name: texte_associe
+            description: "STRING"
+          - name: vote_ref
+            description: "STRING"
       - name: amendements
-
-models:
-  - name: stg_deputes
-    description: Staging model for deputes data.
-
-  - name: stg_mandats
-    description: Staging model for mandats data.
-
-  - name: stg_interventions
-    description: Staging model for interventions data.
-
-  - name: stg_comptes_rendus
-    description: Staging model for comptes rendus data.
-
-  - name: stg_points_seance
-    description: Staging model for points de seance data.
-
-  - name: stg_commissions
-    description: Staging model for commissions data.
-
-  - name: stg_organes
-    description: Staging model for organes data.
-
-  - name: stg_scrutins
-    description: Staging model for scrutins data.
-
-  - name: stg_scrutin_groupes_votes
-    description: Staging model for aggregated votes by group.
-
-  - name: stg_scrutin_votes_individuels
-    description: Staging model for individual scrutin votes.
-
-  - name: stg_documents
-    description: Staging model for legislative documents.
-
-  - name: stg_dossiers_parlementaires
-    description: Staging model for parliamentary dossiers.
-
-  - name: stg_dossier_actes_legislatifs
-    description: Staging model for dossier legislative acts.
-
-  - name: stg_amendements
-    description: Staging model for amendements data.
-
-  - name: stg_depute_mandats
-    description: Intermediate model linking deputes and mandats.
-
-  - name: stg_depute_commissions
-    description: Intermediate model linking deputes and commissions.
-
-  - name: stg_interventions_enriched
-    description: Intermediate enriched interventions model.
-  
-  - name: stg_groupes
-    description: Intermediate model for groupes data.
-
-  - name: stg_scrutin_groupes
-    description: Intermediate model for scrutin group votes.
-  
-  - name: stg_scrutin_groupes_enriched
-    description: Intermediate enriched model for scrutin group votes.
-
-  - name: stg_dossier_actes
-    description: Intermediate model for timeline and act counts per dossier.
-
-  - name: stg_dossier_documents
-    description: Intermediate model for document counts per dossier.
-
-  - name: stg_dossier_scrutins
-    description: Intermediate model for vote statistics per dossier.
-
-  - name: stg_dossier_amendements
-    description: Intermediate model for amendment statistics per dossier.
-  - name: stg_depute_dans_partis
-    description: Intermediate model linking deputes to their partis and groupes.
-
-  - name: stg_liste_siege
-    description: Intermediate model for mapping deputes to their place in the hemicycle.
-  
-  - name: stg_mandats_actifs
-    description: Intermediate model for active mandats and their circonscriptions.
-
-  - name: mart_groupes_co_vote
-    description: Mart for co-voting patterns between groupes.
-
-  - name: mart_depute_activity
-    description: Mart for depute activity analytics.
-
-  - name: mart_groupe_activity
-    description: Mart for groupe activity analytics.
-
-  - name: mart_commission_activity
-    description: Mart for commission activity analytics.
-
-  - name: mart_interventions_time
-    description: Mart for interventions over time.
-
-  - name: mart_interventions_enriched
-    description: Final enriched interventions mart.
-
-  - name: mart_deputes_circonscriptions
-    description: Mart map-ready for deputes and circonscriptions analytics.
-
-  - name: mart_circonscription_activity
-    description: One row per circonscription with deputes and interventions aggregates.
-
-  - name: mart_dossiers_enriched
-    description: Enriched mart providing 360 view of legislative dossiers.
-
-  - name: mart_dossiers_votes_groupes
-    description: Mart aggregating vote counts by political group per dossier.
-  - name: mart_depute_place_hemicycle
-    description: Mart for mapping deputes to their place in the hemicycle.
+        description: Columns extracted from ingest/lib/amendements/bq_schemas.py
+        columns:
+          - name: uid
+            description: "STRING (REQUIRED)"
+          - name: legislature
+            description: "STRING"
+          - name: numero_long
+            description: "STRING"
+          - name: numero_ordre_depot
+            description: "STRING"
+          - name: prefixe_organe_examen
+            description: "STRING"
+          - name: examen_ref
+            description: "STRING"
+          - name: texte_legislatif_ref
+            description: "STRING"
+          - name: division_titre
+            description: "STRING"
+          - name: article_designation_courte
+            description: "STRING"
+          - name: division_type
+            description: "STRING"
+          - name: dispositif
+            description: "STRING"
+          - name: expose_sommaire
+            description: "STRING"
+          - name: date_depot
+            description: "DATE"
+          - name: date_publication
+            description: "DATE"
+          - name: etat_code
+            description: "STRING"
+          - name: etat_libelle
+            description: "STRING"
+          - name: sous_etat_code
+            description: "STRING"
+          - name: sous_etat_libelle
+            description: "STRING"
+          - name: sort
+            description: "STRING"
+          - name: auteur_type
+            description: "STRING"
+          - name: auteur_acteur_ref
+            description: "STRING"
+          - name: auteur_groupe_politique_ref
+            description: "STRING"
+          - name: dossier_legislatif_ref
+            description: "STRING"
