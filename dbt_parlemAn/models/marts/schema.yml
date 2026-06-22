@@ -1,0 +1,179 @@
+models:
+  - name: mart_circonscription_activity
+    columns:
+      - name: circonscription_code
+        tests:
+          - not_null
+      - name: circonscription_code_nodash
+      - name: departement_code
+      - name: circonscription_numero
+      - name: election_departement
+      - name: legislature
+      - name: nb_deputes
+      - name: nb_mandats
+      - name: nb_interventions
+      - name: premiere_intervention
+      - name: derniere_intervention
+      - name: groupes_politiques
+      - name: positionnements_politiques
+      - name: couleurs_groupes
+      - name: deputes
+  - name: mart_commission_activity
+    columns:
+      - name: commission_uid
+        tests:
+          - not_null
+      - name: commission_libelle
+      - name: commission_libelle_abrege
+      - name: commission_code_type
+      - name: nb_deputes
+      - name: nb_mandats
+      - name: nb_interventions_des_membres
+      - name: nb_orateurs
+      - name: premiere_intervention
+      - name: derniere_intervention
+  - name: mart_depute_activity
+    columns:
+      - name: depute_uid
+        tests:
+          - not_null
+      - name: nom_complet
+      - name: trigramme
+      - name: nb_mandats
+      - name: nb_interventions
+      - name: premiere_intervention
+      - name: derniere_intervention
+  - name: mart_depute_place_hemicycle
+    columns:
+      - name: depute_uid
+        tests:
+          - not_null
+      - name: nom
+      - name: prenom
+      - name: mandature_place_hemicycle
+      - name: gp_libelle
+      - name: gp_couleur
+  - name: mart_deputes_circonscriptions
+    columns:
+      - name: depute_uid
+        tests:
+          - not_null
+      - name: nom_complet
+      - name: trigramme
+      - name: legislature
+      - name: mandat_uid
+        tests:
+          - not_null
+      - name: date_debut
+      - name: date_fin
+      - name: election_departement
+      - name: departement_code
+      - name: circonscription_numero
+      - name: circonscription_code
+      - name: nb_interventions_depute
+      - name: premiere_intervention_depute
+      - name: derniere_intervention_depute
+      - name: nb_deputes
+      - name: nb_mandats
+      - name: nb_interventions
+      - name: premiere_intervention
+      - name: derniere_intervention
+      - name: deputes
+  - name: mart_dossiers_enriched
+    columns:
+      - name: dossier_uid
+        tests:
+          - not_null
+      - name: legislature
+      - name: titre_dossier
+      - name: titre_chemin
+      - name: procedure_parlementaire_code
+      - name: procedure_parlementaire_libelle
+      - name: initiateur_acteur_ref
+      - name: initiateur_mandat_ref
+      - name: initiateur_organe_ref
+      - name: date_premier_acte
+      - name: date_dernier_acte
+      - name: nombre_actes_total
+      - name: est_adopte
+      - name: nombre_documents_total
+      - name: nombre_scrutins_total
+      - name: nombre_scrutins_adoptes
+      - name: nombre_scrutins_rejetes
+      - name: volume_votants_total
+      - name: volume_votes_pour
+      - name: volume_votes_contre
+      - name: volume_votes_abstentions
+      - name: nombre_amendements_total
+      - name: nombre_amendements_adoptes
+      - name: nombre_amendements_rejetes
+  - name: mart_dossiers_votes_groupes
+    columns:
+      - name: dossier_uid
+        tests:
+          - not_null
+      - name: titre_dossier
+      - name: legislature
+      - name: est_adopte
+      - name: groupe_organe_ref
+        tests:
+          - not_null
+      - name: groupe_libelle
+      - name: groupe_libelle_abrege
+      - name: organe_ref_assemblee
+      - name: total_scrutins_participes
+      - name: volume_total_pour
+      - name: volume_total_contre
+      - name: volume_total_abstention
+  - name: mart_groupe_activity
+    columns:
+      - name: groupe_uid
+        tests:
+          - not_null
+      - name: groupe_libelle
+      - name: gp_position_politique
+      - name: gp_couleur
+      - name: groupe_legislature
+      - name: nb_deputes
+      - name: nb_mandats
+      - name: nb_interventions
+      - name: nb_orateurs
+      - name: premiere_intervention
+      - name: derniere_intervention
+  - name: mart_groupes_co_vote
+    columns:
+      - name: nb_co_votes
+      - name: groupe_uid_1
+        tests:
+          - not_null
+      - name: groupe_uid_2
+        tests:
+          - not_null
+  - name: mart_interventions_enriched
+    columns:
+      - name: intervention_id
+        tests:
+          - not_null
+      - name: compte_rendu_uid
+      - name: point_id
+      - name: point_valeur_ptsodj
+      - name: date_seance
+      - name: legislature
+      - name: session
+      - name: num_seance
+      - name: roledebat
+      - name: depute_uid
+      - name: orateur_nom
+      - name: trigramme
+      - name: profession_categorie
+      - name: profession_famille
+      - name: texte
+  - name: mart_interventions_time
+    columns:
+      - name: date_seance
+        tests:
+          - not_null
+      - name: legislature
+      - name: nb_interventions
+      - name: nb_orateurs
+      - name: nb_comptes_rendus

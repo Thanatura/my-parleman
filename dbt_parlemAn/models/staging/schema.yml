@@ -1,0 +1,170 @@
+models:
+  - name: stg_scrutin_groupes
+    columns:
+      - name: groupe_uid
+        tests:
+          - not_null
+      - name: assemblee_uid
+      - name: scrutin_uid
+        tests:
+          - not_null
+      - name: nombre_membres_groupe
+      - name: position_majoritaire
+      - name: non_votants
+      - name: pour
+      - name: contre
+      - name: abstentions
+      - name: non_votants_volontaires
+  - name: stg_depute_commissions
+    columns:
+      - name: depute_uid
+        tests:
+          - not_null
+      - name: nom
+      - name: prenom
+      - name: nom_complet
+      - name: mandat_uid
+        tests:
+          - not_null
+      - name: legislature
+      - name: date_debut
+      - name: date_fin
+      - name: commission_uid
+        tests:
+          - not_null
+      - name: commission_libelle
+      - name: commission_libelle_abrege
+      - name: commission_code_type
+  - name: stg_depute_dans_partis
+    columns:
+      - name: depute_uid
+        tests:
+          - not_null
+      - name: gp_libelle
+      - name: gp_couleur
+  - name: stg_depute_mandats
+    columns:
+      - name: mandat_uid
+        tests:
+          - not_null
+      - name: depute_uid
+        tests:
+          - not_null
+      - name: nom
+      - name: prenom
+      - name: nom_complet
+      - name: trigramme
+      - name: legislature
+      - name: type_organe
+      - name: organe_uid
+        tests:
+          - not_null
+      - name: election_departement
+      - name: election_num_departement
+      - name: election_num_circo
+      - name: date_debut
+      - name: date_fin
+      - name: code_qualite
+      - name: lib_qualite
+      - name: nomin_principale
+      - name: mandature_premiere_election
+      - name: mandature_place_hemicycle
+  - name: stg_dossier_actes
+    columns:
+      - name: dossier_uid
+        tests:
+          - not_null
+      - name: date_premier_acte
+      - name: date_dernier_acte
+      - name: nombre_actes_total
+      - name: est_adopte
+  - name: stg_dossier_amendements
+    columns:
+      - name: dossier_uid
+        tests:
+          - not_null
+      - name: nombre_amendements_total
+      - name: nombre_amendements_adoptes
+      - name: nombre_amendements_rejetes
+  - name: stg_dossier_documents
+    columns:
+      - name: dossier_uid
+        tests:
+          - not_null
+      - name: nombre_documents_total
+  - name: stg_dossier_scrutins
+    columns:
+      - name: dossier_uid
+        tests:
+          - not_null
+      - name: nombre_scrutins_total
+      - name: nombre_scrutins_adoptes
+      - name: nombre_scrutins_rejetes
+      - name: volume_votants_total
+      - name: volume_votes_pour
+      - name: volume_votes_contre
+      - name: volume_votes_abstentions
+  - name: stg_groupes
+    columns:
+      - name: groupe_uid
+        tests:
+          - not_null
+      - name: groupe_libelle
+      - name: groupe_libelle_abrev
+      - name: gp_position_politique
+      - name: gp_couleur
+      - name: groupe_legislature
+      - name: groupe_date_debut
+      - name: groupe_date_fin
+  - name: stg_interventions_enriched
+    columns:
+      - name: intervention_id
+        tests:
+          - not_null
+      - name: compte_rendu_uid
+        tests:
+          - not_null
+      - name: point_id
+      - name: point_valeur_ptsodj
+      - name: date_seance
+      - name: legislature
+      - name: session
+      - name: num_seance
+      - name: roledebat
+      - name: texte
+      - name: depute_uid
+      - name: orateur_nom
+      - name: trigramme
+      - name: profession_categorie
+      - name: profession_famille
+  - name: stg_liste_siege
+    columns:
+      - name: depute_uid
+        tests:
+          - not_null
+      - name: mandature_place_hemicycle
+  - name: stg_mandats_actifs
+    columns:
+      - name: organe_uid
+        tests:
+          - not_null
+      - name: circo_dep_code
+      - name: circo_dep_libelle
+      - name: circo_numero
+      - name: circo_region_type
+      - name: circo_region_libelle
+  - name: stg_scrutin_groupes_enriched
+    columns:
+      - name: groupe_uid
+        tests:
+          - not_null
+      - name: groupe_libelle
+      - name: gp_position_politique
+      - name: gp_couleur
+      - name: groupe_legislature
+      - name: groupe_date_debut
+      - name: groupe_date_fin
+      - name: scrutin_uid
+        tests:
+          - not_null
+      - name: position_majoritaire
