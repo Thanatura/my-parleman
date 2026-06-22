@@ -1,29 +1,32 @@
-
-
 with depute_mandats as (
-    select *
-    from {{ ref('stg_depute_mandats') }}
+  select depute_uid,
+    nom,
+    prenom,
+    nom_complet,
+    mandat_uid,
+    legislature,
+    date_debut,
+    date_fin,
+    organe_uid
+  from {{ ref('stg_depute_mandats') }}
 ),
 commissions as (
-    select
-      uid as commission_uid,
-      code_type,
-      libelle,
-      libelle_abrege,
-      libelle_abrev,
-      legislature,
-      date_debut,
-      date_fin,
-      circo_region_type,
-      circo_region_libelle,
-      gp_position_politique
-    from {{ source('raw_parleman', 'organes') }}
-    where lower(coalesce(code_type, '')) like '%com%'
-       or lower(coalesce(libelle, '')) like '%commission%'
+  select uid as commission_uid,
+    code_type,
+    libelle,
+    libelle_abrege,
+    libelle_abrev,
+    legislature,
+    date_debut,
+    date_fin,
+    circo_region_type,
+    circo_region_libelle,
+    gp_position_politique
+  from {{ source('raw_parleman', 'organes') }}
+  where lower(coalesce(code_type, '')) like '%com%'
+    or lower(coalesce(libelle, '')) like '%commission%'
 )
-
-select
-  dm.depute_uid,
+select dm.depute_uid,
   dm.nom,
   dm.prenom,
   dm.nom_complet,
@@ -36,5 +39,4 @@ select
   c.libelle_abrege as commission_libelle_abrege,
   c.code_type as commission_code_type
 from depute_mandats dm
-inner join commissions c
-  on dm.organe_uid = c.commission_uid
+  inner join commissions c on dm.organe_uid = c.commission_uid

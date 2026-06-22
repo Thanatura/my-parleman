@@ -1,7 +1,16 @@
 
 
 with scrutin_groupes_votes as (
-    select *
+    select groupe_organe_ref,
+           organe_ref_assemblee,
+           scrutin_uid,
+           nombre_membres_groupe,
+           position_majoritaire,
+           non_votants,
+           pour,
+           contre,
+           abstentions,
+           non_votants_volontaires
     from {{ source('raw_parleman', 'scrutin_groupes_votes') }}
 )
 

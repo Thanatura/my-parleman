@@ -1,7 +1,11 @@
 
 
 with interventions as (
-    select *
+    select date_seance,
+           legislature,
+           intervention_id,
+           depute_uid,
+           compte_rendu_uid
     from {{ ref('stg_interventions_enriched') }}
 )
 

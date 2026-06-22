@@ -1,11 +1,20 @@
 
 
 with depute_commissions as (
-    select *
+    select depute_uid,
+           mandat_uid,
+           commission_uid,
+           commission_libelle,
+           commission_libelle_abrege,
+           commission_code_type,
+           date_fin,
+           date_debut
     from {{ ref('stg_depute_commissions') }}
 ),
 interventions as (
-    select *
+    select intervention_id,
+           date_seance,
+           depute_uid
     from {{ ref('stg_interventions_enriched') }}
 ),
 commission_members as (
