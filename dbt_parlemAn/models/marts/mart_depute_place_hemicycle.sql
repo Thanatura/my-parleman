@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+
 
 with deputes_dans_partis as (
     select *

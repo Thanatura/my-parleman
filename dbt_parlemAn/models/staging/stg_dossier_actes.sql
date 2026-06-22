@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+
 
 with actes as (
     select

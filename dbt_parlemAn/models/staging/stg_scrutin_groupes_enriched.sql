@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+
 
 with groupes as (select * from {{ ref('stg_groupes') }}),
      scrutins_groupes as (select * from {{ ref('stg_scrutin_groupes') }})

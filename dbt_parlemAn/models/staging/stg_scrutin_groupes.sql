@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+
 
 with scrutin_groupes_votes as (
     select *

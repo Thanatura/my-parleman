@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+
 
 with votes_groupes as (
     select

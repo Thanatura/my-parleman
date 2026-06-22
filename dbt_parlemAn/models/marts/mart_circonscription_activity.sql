@@ -1,4 +1,4 @@
-{{ config(materialized='table') }}
+
 
 with depute_mandats as (
     select

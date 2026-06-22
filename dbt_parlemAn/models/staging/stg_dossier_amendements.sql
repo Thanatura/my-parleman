@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+
 
 with amendements as (
     select
