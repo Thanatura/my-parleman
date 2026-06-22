@@ -1,7 +1,7 @@
 from typing import Any
 
-from ingest.lib.depute.models import ActeurRow
-from ingest.lib.parsing_common import read_json_files_from_zip, to_date, to_str, utc_now
+from lib.depute.models import ActeurRow
+from lib.parsing_common import read_json_files_from_zip, to_date, to_str, utc_now
 
 
 def _acteur_node(raw_payload: dict[str, Any]) -> dict[str, Any]:

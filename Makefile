@@ -1,3 +1,6 @@
+SHELL := /usr/bin/env bash
+.SHELLFLAGS := -eu -o pipefail -c
+
 build_prefect_worker: ## Build image for GCP (Linux/amd64 platform)
 	@echo "Building the image for GCP..."
 	docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/${GCP_PROJECT}/${DOCKER_REGISTRY}/prefect-worker -f infra/prefect/worker.Dockerfile . 
@@ -54,21 +57,18 @@ setup_prefect_variables:
 	uv run --project ingest prefect variable set dossiers-legislatifs-url "$$DOSSIERS_LEGISLATIFS_URL"; \
 	uv run --project ingest prefect variable set amendements-url "$$AMENDEMENTS_URL"; \
 	uv run --project ingest prefect variable set questions-ecrites-url "$$QUESTIONS_ECRITES_URL"
-	@set -euo pipefail; \
-	TF_DIR="infra/terraform"; \
-	RUNNER_SA_KEY_JSON="$$(terraform -chdir="$$TF_DIR" output -raw runner_service_account_key_json)"; \
-	RUNNER_SA_KEY_JSON="$$RUNNER_SA_KEY_JSON" uv run --project ingest python -c 'import os; from prefect.blocks.system import Secret; Secret(value=os.environ["RUNNER_SA_KEY_JSON"]).save("gcp-service-account-info", overwrite=True)'; \
-	echo "Updated Prefect Secret block: gcp-service-account-info"
 
 deploy_all_flows:
 	@set -euo pipefail; \
 	set -a; . ./.env; set +a; \
-	uv run --project ingest prefect deploy --all; \
+	cd ingest; \
+	uv run prefect deploy --all; \
 	echo "All flows have been deployed to Prefect"
 
 run_all_flows:
 	@set -euo pipefail; \
 	set -a; . ./.env; set +a; \
+	cd ingest; \
 	for d in \
 		an-deputes-pipeline/deputes \
 		debat-flow/debats \
@@ -77,7 +77,7 @@ run_all_flows:
 		amendements-flow/amendements \
 		questions-ecrites-flow/questions_ecrites; do \
 		echo "Triggering deployment: $$d"; \
-		uv run --project ingest prefect deployment run "$$d" & \
+		uv run prefect deployment run "$$d" & \
 	done; \
 	wait; \
 	echo "All non-dbt deployments have been triggered"

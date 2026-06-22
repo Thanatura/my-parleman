@@ -1,5 +1,5 @@
-from ingest.lib.depute.models import DeportRow
-from ingest.lib.parsing_common import read_json_files_from_zip, to_str, to_ts, utc_now
+from lib.depute.models import DeportRow
+from lib.parsing_common import read_json_files_from_zip, to_str, to_ts, utc_now
 
 
 def parse_deports(zip_bytes: bytes) -> list[DeportRow]:

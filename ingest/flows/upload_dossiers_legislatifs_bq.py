@@ -5,15 +5,15 @@ from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 from prefect.tasks import task_input_hash
 
-from ingest.lib.bq_utils import load_all_tables
-from ingest.lib.bq_utils.models import BigQueryRow
-from ingest.lib.config import ProjectConfig, get_config
-from ingest.lib.dossiers_legislatifs import (
+from lib.bq_utils import load_all_tables
+from lib.bq_utils.models import BigQueryRow
+from lib.config import ProjectConfig, get_config
+from lib.dossiers_legislatifs import (
     DOSSIERS_LEGISLATIFS_SCHEMAS,
     DossiersParseResult,
     parse_dossiers_legislatifs,
 )
-from ingest.lib.extract import fetch_zip_file
+from lib.extract import fetch_zip_file
 
 
 @task(cache_key_fn=task_input_hash, cache_expiration=None)

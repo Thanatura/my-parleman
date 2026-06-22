@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from google.api_core.exceptions import NotFound
 from google.cloud import bigquery
 
-from ingest.lib.config import ProjectConfig
+from lib.config import ProjectConfig
 
 
 def schema_signature(

@@ -91,6 +91,7 @@ terraform -chdir=infra/terraform/bootstrap apply
 Depuis la racine :
 
 ```bash
+gcloud auth configure-docker europe-west1-docker.pkg.dev
 make push_all_images
 ```
 

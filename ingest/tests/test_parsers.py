@@ -2,8 +2,14 @@ import io
 import json
 import zipfile
 
-from ingest.lib.depute.models import AdresseRow, ActeurRow, DeportRow, MandatRow, OrganeRow
-from ingest.lib.depute.parsing import (
+from lib.depute.models import (
+    AdresseRow,
+    ActeurRow,
+    DeportRow,
+    MandatRow,
+    OrganeRow,
+)
+from lib.depute.parsing import (
     parse_acteurs,
     parse_adresses,
     parse_deports,

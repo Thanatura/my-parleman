@@ -1,5 +1,5 @@
-from ingest.lib.depute.models import OrganeRow
-from ingest.lib.parsing_common import (
+from lib.depute.models import OrganeRow
+from lib.parsing_common import (
     read_json_files_from_zip,
     to_date,
     to_int,

@@ -20,3 +20,8 @@ RUN uv pip install --python /app/ingest/.venv/bin/python --no-cache dbt-bigquery
 
 # Ensure the virtual environment's bin directory is in the PATH
 ENV PATH="/app/ingest/.venv/bin:$PATH"
+
+# 10/10
+# 5 niv 1 (bénédiction, soin, blessure, eclair traçant, mot de guérison)
+# 4 niv 2 (prière de guérison, apaisement des émotions, aide, immobilisation de personne)
+# 1 niv 3 (esprits gardiens)

@@ -1,4 +1,3 @@
-import json
 from os import getenv
 import subprocess
 import tempfile
@@ -7,26 +6,28 @@ from pathlib import Path
 from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_markdown_artifact
 
-from ingest.lib.config import ProjectConfig, get_config
+from lib.config import ProjectConfig, get_config
 
 
-def _profiles_yml_content(
-    config: ProjectConfig, target: str, keyfile_path: Path
-) -> str:
-    return (
+def _profiles_yml_content(config: ProjectConfig, target: str) -> str:
+    content = (
         "dbt_parlemAn:\n"
         f"  target: {target}\n"
         "  outputs:\n"
         f"    {target}:\n"
         "      type: bigquery\n"
-        "      method: service-account\n"
+    )
+
+    content += (
+        "      method: oauth\n"
         f"      project: {config.gcp_project}\n"
         f"      dataset: {config.bq_dataset}\n"
         "      threads: 4\n"
         "      timeout_seconds: 300\n"
         "      location: EU\n"
-        f"      keyfile: {keyfile_path}\n"
     )
+
+    return content
 
 
 @task
@@ -41,15 +42,10 @@ def run_dbt_build(
     project_dir = Path(__file__).resolve().parents[2] / "dbt_parlemAn"
 
     with tempfile.TemporaryDirectory(prefix="dbt_profiles_") as profiles_dir:
-        keyfile_path = Path(profiles_dir) / "service_account.json"
         profiles_path = Path(profiles_dir) / "profiles.yml"
 
-        keyfile_path.write_text(
-            json.dumps(config.service_account_info), encoding="utf-8"
-        )
-
         profiles_path.write_text(
-            _profiles_yml_content(config, target, keyfile_path),
+            _profiles_yml_content(config, target),
             encoding="utf-8",
         )
 

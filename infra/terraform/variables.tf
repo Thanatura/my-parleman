@@ -42,12 +42,6 @@ variable "artifact_registry_repository_id" {
   default     = "parleman-artifact-repo"
 }
 
-variable "runner_service_account_id" {
-  description = "Service account that runs BigQuery loads."
-  type        = string
-  default     = "parleman-bq-runner"
-}
-
 variable "worker_service_account_id" {
   description = "Service account that runs the Cloud Run worker."
   type        = string

@@ -6,17 +6,6 @@ resource "google_project_service" "services" {
   disable_on_destroy = false
 }
 
-resource "google_service_account" "runner" {
-  account_id   = var.runner_service_account_id
-  display_name = "ParlemAN BigQuery Runner"
-  project      = var.project_id
-}
-
-resource "google_service_account_key" "runner" {
-  service_account_id = google_service_account.runner.name
-  private_key_type   = "TYPE_GOOGLE_CREDENTIALS_FILE"
-}
-
 resource "google_service_account" "worker" {
   account_id   = var.worker_service_account_id
   display_name = "ParlemAN Prefect Worker"
@@ -51,17 +40,11 @@ resource "google_bigquery_dataset" "parleman" {
   labels                     = local.labels
 }
 
-resource "google_bigquery_dataset_access" "runner_writer" {
+resource "google_bigquery_dataset_access" "worker_writer" {
   dataset_id    = google_bigquery_dataset.parleman.dataset_id
   project       = var.project_id
   role          = "WRITER"
-  user_by_email = google_service_account.runner.email
-}
-
-resource "google_project_iam_member" "runner_job_user" {
-  project = var.project_id
-  role    = "roles/bigquery.jobUser"
-  member  = "serviceAccount:${google_service_account.runner.email}"
+  user_by_email = google_service_account.worker.email
 }
 
 resource "google_project_iam_member" "worker_artifact_registry_reader" {
@@ -85,6 +68,24 @@ resource "google_project_iam_member" "worker_run_developer" {
 resource "google_project_iam_member" "worker_service_account_user" {
   project = var.project_id
   role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
+resource "google_project_iam_member" "worker_bigquery_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
+resource "google_project_iam_member" "worker_bigquery_data_editor" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.worker.email}"
+}
+
+resource "google_project_iam_member" "worker_bigquery_admin" {
+  project = var.project_id
+  role    = "roles/bigquery.admin"
   member  = "serviceAccount:${google_service_account.worker.email}"
 }
 

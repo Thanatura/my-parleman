@@ -1,12 +1,12 @@
 from typing import Any
 
-from ingest.lib.parsing_common import (
+from lib.parsing_common import (
     read_json_files_from_zip,
     to_str,
     to_int,
     to_ts,
 )
-from ingest.lib.dossiers_legislatifs.models import (
+from lib.dossiers_legislatifs.models import (
     DocumentRow,
     DossierParlementaireRow,
     DossierActeLegislatifRow,

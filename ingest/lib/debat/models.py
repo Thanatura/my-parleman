@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ingest.lib.bq_utils.models import BigQueryRow
+from lib.bq_utils.models import BigQueryRow
 
 
 @dataclass

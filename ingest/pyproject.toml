@@ -29,6 +29,6 @@ packages = ["lib", "flows"]
 [tool.mypy]
 python_version = "3.13"
 explicit_package_bases = true
-files = ["ingest/lib", "ingest/flows", "ingest/tests"]
-exclude = "^ingest/\\.venv/"
+files = ["lib", "flows", "tests"]
+exclude = "^\\.venv/"
 disable_error_code = ["untyped-decorator"]

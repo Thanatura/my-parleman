@@ -4,18 +4,18 @@ from uuid import uuid4
 from google.cloud import bigquery
 from prefect import get_run_logger
 
-from ingest.lib.bq_utils.client import create_bq_client
-from ingest.lib.bq_utils.chunking import iter_chunked_rows
-from ingest.lib.bq_utils.models import BigQueryRow
-from ingest.lib.bq_utils.staging import (
+from lib.bq_utils.client import create_bq_client, get_adc_service_account_email, get_runtime_service_account_email
+from lib.bq_utils.chunking import iter_chunked_rows
+from lib.bq_utils.models import BigQueryRow
+from lib.bq_utils.staging import (
     build_staging_table_id,
     build_target_table_id,
     cleanup_staging_tables,
     prepare_staging_tables,
     publish_staging_to_target,
 )
-from ingest.lib.bq_utils.validation import ensure_dataset, validate_rows_for_table
-from ingest.lib.config import ProjectConfig
+from lib.bq_utils.validation import ensure_dataset, validate_rows_for_table
+from lib.config import ProjectConfig
 
 
 def _load_rows_to_table_id(
@@ -51,6 +51,7 @@ def load_all_tables_by_batches(
     logger = get_run_logger()
     logger.info("connecting to big query...")
     bq_client = create_bq_client(config)
+    
     logger.info("Finished connecting to big query")
 
     logger.info("Creating dataset if not exists...")

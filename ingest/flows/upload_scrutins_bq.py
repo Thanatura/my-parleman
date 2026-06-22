@@ -5,13 +5,13 @@ from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 from prefect.tasks import task_input_hash
 
-from ingest.lib.bq_utils import load_all_tables
-from ingest.lib.bq_utils.models import BigQueryRow
-from ingest.lib.config import ProjectConfig, get_config
-from ingest.lib.extract import fetch_zip_file
-from ingest.lib.scrutins.bq_schemas import SCRUTINS_SCHEMAS
-from ingest.lib.scrutins.models import ScrutinParseResult
-from ingest.lib.scrutins.parsing import parse_scrutins
+from lib.bq_utils import load_all_tables
+from lib.bq_utils.models import BigQueryRow
+from lib.config import ProjectConfig, get_config
+from lib.extract import fetch_zip_file
+from lib.scrutins.bq_schemas import SCRUTINS_SCHEMAS
+from lib.scrutins.models import ScrutinParseResult
+from lib.scrutins.parsing import parse_scrutins
 
 
 @task(cache_key_fn=task_input_hash, cache_expiration=None)

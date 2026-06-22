@@ -7,12 +7,12 @@ from prefect.artifacts import create_table_artifact
 
 from prefect.cache_policies import INPUTS, NO_CACHE
 from prefect.tasks import task_input_hash
-from ingest.lib.bq_utils import load_all_tables
-from ingest.lib.bq_utils.models import BigQueryRow
-from ingest.lib.config import ProjectConfig, get_config
-from ingest.lib.debat import DebatParseResult, parse_debats_files
-from ingest.lib.debat.bq_schemas import DEBATS_SCHEMAS
-from ingest.lib.extract import extract_file_contents, fetch_zip_file
+from lib.bq_utils import load_all_tables
+from lib.bq_utils.models import BigQueryRow
+from lib.config import ProjectConfig, get_config
+from lib.debat import DebatParseResult, parse_debats_files
+from lib.debat.bq_schemas import DEBATS_SCHEMAS
+from lib.extract import extract_file_contents, fetch_zip_file
 
 
 @task(

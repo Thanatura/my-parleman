@@ -18,22 +18,6 @@ output "prefect_server_url" {
   value       = google_cloud_run_v2_service.prefect_server.uri
 }
 
-output "runner_service_account_email" {
-  description = "BigQuery runner service account email."
-  value       = google_service_account.runner.email
-}
-
-output "runner_service_account_key_name" {
-  description = "Resource name of the runner service account key."
-  value       = google_service_account_key.runner.name
-}
-
-output "runner_service_account_key_json" {
-  description = "Runner service account key JSON for external integrations."
-  value       = base64decode(google_service_account_key.runner.private_key)
-  sensitive   = true
-}
-
 output "worker_service_account_email" {
   description = "Cloud Run worker service account email."
   value       = google_service_account.worker.email

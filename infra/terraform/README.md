@@ -6,9 +6,8 @@ This directory contains the main infrastructure stack for ParlemAN.
 
 - required GCP services (BigQuery, IAM, Cloud Run, etc.),
 - BigQuery dataset,
-- service account for BigQuery loading (`parleman-bq-runner` by default),
 - service account for Cloud Run worker (`parleman-prefect-worker` by default),
-- IAM bindings for runner and worker,
+- IAM bindings for the worker service account,
 - PostgreSQL VM module for Prefect metadata database (`vm_db`),
 - Cloud Run Prefect worker service,
 - Cloud Run Prefect server service.
@@ -235,7 +234,6 @@ Main outputs from `outputs.tf`:
 - `artifact_registry_repository`
 - `cloud_run_worker_url`
 - `prefect_server_url`
-- `runner_service_account_email`
 - `worker_service_account_email`
 - `worker_image`
 - `prefect_db_public_ip`

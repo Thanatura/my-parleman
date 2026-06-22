@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Iterator
 
-from ingest.lib.bq_utils.models import BigQueryRow
+from lib.bq_utils.models import BigQueryRow
 
 
 def iter_chunked_rows(

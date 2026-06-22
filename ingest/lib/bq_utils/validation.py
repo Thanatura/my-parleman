@@ -1,14 +1,13 @@
 from collections.abc import Mapping, Sequence
 from google.cloud import bigquery
-from ingest.lib.config import ProjectConfig
-from ingest.lib.bq_utils.models import BigQueryRow
+from lib.config import ProjectConfig
+from lib.bq_utils.models import BigQueryRow
 
 
 def ensure_dataset(client: bigquery.Client, config: ProjectConfig) -> None:
     dataset_ref = bigquery.Dataset(f"{config.gcp_project}.{config.bq_dataset}")
     dataset_ref.location = "EU"
     client.create_dataset(dataset_ref, exists_ok=True)
-
 
 class ValidationError(ValueError):
     pass

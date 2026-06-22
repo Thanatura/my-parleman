@@ -1,6 +1,6 @@
-from ingest.lib.depute.models import AdresseRow
-from ingest.lib.depute.parsing.acteurs import _acteur_node, _acteur_uid
-from ingest.lib.parsing_common import read_json_files_from_zip, to_str, utc_now
+from lib.depute.models import AdresseRow
+from lib.depute.parsing.acteurs import _acteur_node, _acteur_uid
+from lib.parsing_common import read_json_files_from_zip, to_str, utc_now
 
 
 def parse_adresses(zip_bytes: bytes) -> list[AdresseRow]:

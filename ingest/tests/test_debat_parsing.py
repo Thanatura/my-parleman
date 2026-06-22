@@ -1,4 +1,4 @@
-from ingest.lib.debat.parsing import parse_debat_file, parse_debats_files
+from lib.debat.parsing import parse_debat_file, parse_debats_files
 
 
 def test_parse_debat_file_extracts_compte_rendu_points_interventions() -> None:

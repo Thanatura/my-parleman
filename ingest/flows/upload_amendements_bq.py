@@ -4,13 +4,13 @@ import os
 from prefect import flow, get_run_logger, task
 from prefect.artifacts import create_table_artifact
 
-from ingest.lib.amendements.parsing import parse_amendements
-from ingest.lib.bq_utils import load_all_tables
-from ingest.lib.config import ProjectConfig, get_config
-from ingest.lib.amendements import (
+from lib.amendements.parsing import parse_amendements
+from lib.bq_utils import load_all_tables
+from lib.config import ProjectConfig, get_config
+from lib.amendements import (
     AMENDEMENTS_SCHEMAS,
 )
-from ingest.lib.extract import fetch_zip_file_to_temp
+from lib.extract import fetch_zip_file_to_temp
 
 
 @task

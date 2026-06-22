@@ -3,7 +3,7 @@ import zipfile
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 
-from ingest.lib.amendements.parsing import _parse_single_amendement, parse_amendements
+from lib.amendements.parsing import _parse_single_amendement, parse_amendements
 
 
 def _sample_amendement_payload() -> str:

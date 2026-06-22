@@ -14,8 +14,8 @@ x-prefect-common-unscheduled: &prefect-common-unscheduled
       region: europe-west1
       cpu: "1000m"
       memory: "4Gi"
+      service_account_name: parleman-prefect-worker@{{ prefect.variables.gcp-project }}.iam.gserviceaccount.com
       env:
-        SERVICE_ACCOUNT_INFO: "{{ prefect.blocks.secret.gcp-service-account-info }}"
         GCP_PROJECT: "{{ prefect.variables.gcp-project }}"
         BQ_DATASET: "{{ prefect.variables.bq-dataset }}"
         PREFECT_API_URL: "{{ prefect.variables.prefect-api-url }}"
@@ -53,31 +53,31 @@ prefect-version: 3.6.24
 # this project in remote locations
 pull:
   - prefect.deployments.steps.set_working_directory:
-      directory: /app
+      directory: /app/ingest
 
 # the deployments section allows you to provide configuration
 # for deploying flows
 deployments:
 - name: deputes
-  entrypoint: ingest/flows/upload_deputes_bq.py:an_deputes_flow
+  entrypoint: flows/upload_deputes_bq.py:an_deputes_flow
   <<: *prefect-common
 - name: debats
-  entrypoint: ingest/flows/upload_debats_bq.py:debat_flow
+  entrypoint: flows/upload_debats_bq.py:debat_flow
   <<: *prefect-common
 - name: scrutins
-  entrypoint: ingest/flows/upload_scrutins_bq.py:scrutin_flow
+  entrypoint: flows/upload_scrutins_bq.py:scrutin_flow
   <<: *prefect-common
 - name: dossiers_legislatifs
-  entrypoint: ingest/flows/upload_dossiers_legislatifs_bq.py:dossiers_legislatifs_flow
+  entrypoint: flows/upload_dossiers_legislatifs_bq.py:dossiers_legislatifs_flow
   <<: *prefect-common
 - name: amendements
-  entrypoint: ingest/flows/upload_amendements_bq.py:amendements_flow
+  entrypoint: flows/upload_amendements_bq.py:amendements_flow
   <<: *prefect-common
 - name: questions_ecrites
-  entrypoint: ingest/flows/upload_questions_ecrites_bq.py:questions_ecrites_flow
+  entrypoint: flows/upload_questions_ecrites_bq.py:questions_ecrites_flow
   <<: *prefect-common
 - name: dbt_build
-  entrypoint: ingest/flows/run_dbt_build.py:dbt_build_flow
+  entrypoint: flows/run_dbt_build.py:dbt_build_flow
   <<: *prefect-common-unscheduled
   schedules:
   - cron: '45 10 * * 1-5'

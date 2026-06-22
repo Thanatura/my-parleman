@@ -1,7 +1,7 @@
 from typing import Any
 
-from ingest.lib.parsing_common import read_json_files_from_zip, to_date, to_int, to_str
-from ingest.lib.scrutins.models import (
+from lib.parsing_common import read_json_files_from_zip, to_date, to_int, to_str
+from lib.scrutins.models import (
     ScrutinGroupeVoteRow,
     ScrutinParseResult,
     ScrutinRow,

@@ -3,12 +3,12 @@ from itertools import chain, tee
 from typing import Any
 
 import json
-from ingest.lib.parsing_common import (
+from lib.parsing_common import (
     to_str,
     to_date,
 )
-from ingest.lib.extract import extract_zip_file_contents_with_folder
-from ingest.lib.amendements.models import (
+from lib.extract import extract_zip_file_contents_with_folder
+from lib.amendements.models import (
     AmendementRow,
     AmendementSignataireRow,
     AmendementsCosignataireRow,

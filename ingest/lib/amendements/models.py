@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from collections.abc import Iterator
 
-from ingest.lib.bq_utils.models import BigQueryRow
+from lib.bq_utils.models import BigQueryRow
 
 
 @dataclass
